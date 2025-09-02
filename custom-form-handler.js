@@ -30,6 +30,22 @@ const utils = {
   // Math utilities
   roundTo: (value, step) => Math.round(value / step) * step,
   isEqual: (a, b) => Math.abs(a - b) < 1e-5,
+
+  // CSS utilities
+  addShakeAnimation: () => {
+    if (!document.getElementById("shake-animation")) {
+      const style = document.createElement("style");
+      style.id = "shake-animation";
+      style.textContent = `
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  },
 };
 
 // Main Form Handler Class
@@ -66,6 +82,9 @@ class OptimizedFormHandler {
     this.initializeSteps();
     this.setupConditionalLogic();
     this.updateProgress();
+
+    // Add shake animation CSS
+    utils.addShakeAnimation();
   }
 
   setupForm() {
@@ -180,9 +199,9 @@ class OptimizedFormHandler {
     // Set up step transitions
     this.setupStepTransitions();
 
-    // Initialize progress tracking
+    // Initialize progress tracking (uses existing progress elements)
     if (this.config.showProgress) {
-      this.createProgressBar();
+      this.initializeProgressSteps();
     }
   }
 
@@ -204,41 +223,66 @@ class OptimizedFormHandler {
   }
 
   createProgressBar() {
-    // Create progress bar structure
-    const progressContainer = document.createElement("div");
-    progressContainer.className = "form-progress";
-    progressContainer.setAttribute("if-element", "progress-container");
+    // Don't create a custom progress bar - use the existing one
+    // The original form already has progress elements with [if-element='progress-step'] and [if-element='progress-bar']
+    return;
+  }
 
-    progressContainer.innerHTML = `
-      <div class="progress-bar" if-element="progress-bar">
-        <div class="progress-fill" if-element="progress-fill" style="width: ${
-          (1 / this.totalSteps) * 100
-        }%"></div>
-      </div>
-      <div class="progress-text" if-element="progress-text">Step ${
-        this.currentStep + 1
-      } of ${this.totalSteps}</div>
-    `;
+  initializeProgressSteps() {
+    // Initialize existing progress steps with proper classes
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"]',
+      document.body
+    );
+    if (progressSteps.length) {
+      progressSteps.forEach((step, index) => {
+        if (index === 0) {
+          step.classList.add("is-active");
+        } else {
+          step.classList.remove("is-active", "is-completed");
+        }
+      });
+    }
 
-    this.form.insertBefore(progressContainer, this.form.firstChild);
+    // Initialize progress bar width
+    const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
+    if (progressBar.length) {
+      const initialProgress = 1 / this.totalSteps;
+      progressBar.forEach((bar) => {
+        bar.style.setProperty("width", `${initialProgress * 100}%`);
+      });
+    }
   }
 
   updateProgress() {
     if (!this.config.showProgress) return;
 
-    const progressFill = utils.q('[if-element="progress-fill"]');
-    const progressText = utils.q('[if-element="progress-text"]');
-
-    if (progressFill) {
-      progressFill.style.width = `${
-        ((this.currentStep + 1) / this.totalSteps) * 100
-      }%`;
+    // Update progress steps (existing elements with [if-element='progress-step'])
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"]',
+      document.body
+    );
+    if (progressSteps.length) {
+      progressSteps.forEach((step, index) => {
+        if (index <= this.currentStep) {
+          step.classList.add("is-completed");
+          step.classList.remove("is-active");
+        } else if (index === this.currentStep + 1) {
+          step.classList.add("is-active");
+          step.classList.remove("is-completed");
+        } else {
+          step.classList.remove("is-active", "is-completed");
+        }
+      });
     }
 
-    if (progressText) {
-      progressText.textContent = `Step ${this.currentStep + 1} of ${
-        this.totalSteps
-      }`;
+    // Update progress bar width (existing element with [if-element='progress-bar'])
+    const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
+    if (progressBar.length) {
+      const progressPercentage = (this.currentStep + 1) / this.totalSteps;
+      progressBar.forEach((bar) => {
+        bar.style.setProperty("width", `${progressPercentage * 100}%`);
+      });
     }
   }
 
@@ -260,6 +304,12 @@ class OptimizedFormHandler {
 
       // Dispatch step change event
       this.dispatchStepChangeEvent();
+    } else {
+      // Show validation error message
+      this.showStepValidationError();
+
+      // Shake the current step to indicate error
+      this.shakeStep(this.steps[this.currentStep]);
     }
   }
 
@@ -319,34 +369,73 @@ class OptimizedFormHandler {
     const currentStepElement = this.steps[this.currentStep];
     if (!currentStepElement) return true;
 
-    // Validate required fields
+    // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
-      "input[required], select[required], textarea[required]",
+      "input[data-if-has-validation], select[data-if-has-validation], textarea[data-if-has-validation], input[required], select[required], textarea[required]",
       currentStepElement
     );
+
+    // Also check for fields with specific validation rules
+    const validationFields = utils.qa(
+      "input[data-validation], select[data-validation], textarea[data-validation]",
+      currentStepElement
+    );
+
+    const allFields = [...fields, ...validationFields];
     let isValid = true;
 
-    fields.forEach((field) => {
+    allFields.forEach((field) => {
       if (!this.validateField(field)) {
         isValid = false;
       }
     });
+
+    // If no validation fields found, check if step has any inputs that should be validated
+    if (allFields.length === 0) {
+      const allInputs = utils.qa("input, select, textarea", currentStepElement);
+      if (allInputs.length > 0) {
+        // Validate all inputs in the step
+        allInputs.forEach((field) => {
+          if (!this.validateField(field)) {
+            isValid = false;
+          }
+        });
+      }
+    }
 
     return isValid;
   }
 
   validateField(field) {
     const value = field.value.trim();
-    const isRequired = field.hasAttribute("required");
+    const isRequired =
+      field.hasAttribute("required") ||
+      field.hasAttribute("data-if-has-validation");
     const type = field.type;
+    const tagName = field.tagName.toLowerCase();
+
+    // Check if field should be validated based on InputFlow attributes
+    const shouldValidate = this.shouldValidateField(field);
+    if (!shouldValidate) {
+      return true;
+    }
 
     // Clear previous errors
     this.clearFieldError(field);
 
     // Required field validation
     if (isRequired && !value) {
-      this.showFieldError(field, "This field is required");
+      const fieldName =
+        field.getAttribute("placeholder") ||
+        field.getAttribute("name") ||
+        "This field";
+      this.showFieldError(field, `${fieldName} is required`);
       return false;
+    }
+
+    // Skip validation for empty non-required fields
+    if (!isRequired && !value) {
+      return true;
     }
 
     // Type-specific validation
@@ -360,6 +449,7 @@ class OptimizedFormHandler {
           break;
 
         case "tel":
+        case "phone":
           if (!utils.isValidPhone(value)) {
             this.showFieldError(field, "Please enter a valid phone number");
             return false;
@@ -376,6 +466,37 @@ class OptimizedFormHandler {
             return false;
           }
           break;
+
+        case "url":
+          try {
+            new URL(value);
+          } catch {
+            this.showFieldError(field, "Please enter a valid URL");
+            return false;
+          }
+          break;
+      }
+
+      // Textarea length validation
+      if (tagName === "textarea") {
+        const minLength = field.getAttribute("minlength");
+        const maxLength = field.getAttribute("maxlength");
+
+        if (minLength && value.length < parseInt(minLength)) {
+          this.showFieldError(
+            field,
+            `Please enter at least ${minLength} characters`
+          );
+          return false;
+        }
+
+        if (maxLength && value.length > parseInt(maxLength)) {
+          this.showFieldError(
+            field,
+            `Please enter no more than ${maxLength} characters`
+          );
+          return false;
+        }
       }
     }
 
@@ -387,6 +508,30 @@ class OptimizedFormHandler {
           field,
           field.getAttribute("data-error-message") || "Invalid format"
         );
+        return false;
+      }
+    }
+
+    // Radio button group validation
+    if (type === "radio" && isRequired) {
+      const name = field.name;
+      const radioGroup = utils.qa(`input[name="${name}"]`, this.form);
+      const hasSelection = radioGroup.some((radio) => radio.checked);
+
+      if (!hasSelection) {
+        this.showFieldError(field, "Please select an option");
+        return false;
+      }
+    }
+
+    // Checkbox group validation
+    if (type === "checkbox" && isRequired) {
+      const name = field.name;
+      const checkboxGroup = utils.qa(`input[name="${name}"]`, this.form);
+      const hasSelection = checkboxGroup.some((checkbox) => checkbox.checked);
+
+      if (!hasSelection) {
+        this.showFieldError(field, "Please select at least one option");
         return false;
       }
     }
@@ -418,6 +563,66 @@ class OptimizedFormHandler {
       this.validationErrors.delete(field);
     }
     field.classList.remove("error");
+  }
+
+  showStepValidationError() {
+    // Show a general validation error for the step
+    const currentStep = this.steps[this.currentStep];
+    const existingError = currentStep.querySelector(".step-validation-error");
+
+    if (!existingError) {
+      const errorElement = document.createElement("div");
+      errorElement.className = "step-validation-error";
+      errorElement.setAttribute("if-element", "error");
+      errorElement.textContent =
+        "Please complete all required fields before proceeding";
+      errorElement.style.cssText =
+        "color: #e74c3c; font-size: 0.875rem; margin: 1rem 0; text-align: center; padding: 0.5rem; background: #fdf2f2; border: 1px solid #fecaca; border-radius: 0.375rem;";
+
+      // Insert at the top of the step
+      currentStep.insertBefore(errorElement, currentStep.firstChild);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        if (errorElement.parentNode) {
+          errorElement.remove();
+        }
+      }, 5000);
+    }
+  }
+
+  shakeStep(stepElement) {
+    // Add shake animation to indicate validation error
+    stepElement.style.animation = "shake 0.5s ease-in-out";
+
+    // Remove animation after it completes
+    setTimeout(() => {
+      stepElement.style.animation = "";
+    }, 500);
+  }
+
+  shouldValidateField(field) {
+    // Check if field should be validated based on InputFlow attributes
+    if (field.hasAttribute("data-if-has-validation")) {
+      return true;
+    }
+
+    if (field.hasAttribute("required")) {
+      return true;
+    }
+
+    // Check if field is in a step that requires validation
+    const stepElement = field.closest("[if-step]");
+    if (stepElement) {
+      const stepId = stepElement.getAttribute("if-step");
+      // If step has validation rules, validate all fields
+      if (stepElement.hasAttribute("data-if-has-validation")) {
+        return true;
+      }
+    }
+
+    // Default: validate if field has any value or is required
+    return field.value.trim() !== "" || field.hasAttribute("required");
   }
 
   handleAutoAdvance(field) {
