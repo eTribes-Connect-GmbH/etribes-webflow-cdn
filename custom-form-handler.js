@@ -105,6 +105,16 @@ class OptimizedFormHandler {
 
     this.totalSteps = this.steps.length;
 
+    // Create step mapping: logical index -> HTML step index
+    // currentStep 0 = first quiz question (HTML index 1)
+    // currentStep 1 = second quiz question (HTML index 2)
+    // etc.
+    this.stepMapping = {};
+    for (let i = 0; i < this.totalSteps - 1; i++) {
+      this.stepMapping[i] = i + 1; // Skip landing page (index 0)
+    }
+    console.log("setupForm: Step mapping created:", this.stepMapping);
+
     // Initialize step states
     this.initializeStepStates(this.steps);
   }
@@ -225,7 +235,11 @@ class OptimizedFormHandler {
   }
 
   activateFirstProgressNode() {
-    console.log("activateFirstProgressNode called");
+    console.log("=== activateFirstProgressNode START ===");
+    console.log("Current state before activation:");
+    console.log("- currentStep:", this.currentStep);
+    console.log("- isStartingQuiz:", this.isStartingQuiz);
+    console.log("- totalSteps:", this.totalSteps);
 
     // Find the first progress step and activate it completely
     const firstProgressStep = utils.qa(
@@ -315,10 +329,15 @@ class OptimizedFormHandler {
       console.log("No second step found or steps[1] is undefined");
     }
 
-    // Ensure currentStep is set to 0 when starting the quiz
+    // Set currentStep to 0 (first quiz step) and reset flag to allow progression
     this.currentStep = 0;
-    this.isStartingQuiz = true; // Set flag to prevent next step interference
-    console.log("Set currentStep to 0 and isStartingQuiz to true");
+    this.isStartingQuiz = false; // Reset flag to allow next step progression
+    console.log("=== activateFirstProgressNode END ===");
+    console.log("Final state after activation:");
+    console.log("- currentStep:", this.currentStep);
+    console.log("- isStartingQuiz:", this.isStartingQuiz);
+    console.log("- totalSteps:", this.totalSteps);
+    console.log("Ready for progression!");
   }
 
   updateProgressClasses() {
@@ -662,6 +681,8 @@ class OptimizedFormHandler {
 
   async nextStep() {
     console.log("nextStep called with currentStep:", this.currentStep);
+    console.log("totalSteps:", this.totalSteps);
+    console.log("isStartingQuiz:", this.isStartingQuiz);
 
     // Prevent nextStep from running when we're starting the quiz
     if (this.isStartingQuiz) {
@@ -669,12 +690,29 @@ class OptimizedFormHandler {
       return;
     }
 
-    if (!this.steps || this.currentStep >= this.totalSteps - 1) return;
+    if (!this.steps || this.currentStep >= this.totalSteps - 1) {
+      console.log("nextStep blocked - no steps or at last step");
+      console.log("steps:", this.steps);
+      console.log("currentStep:", this.currentStep);
+      console.log("totalSteps:", this.totalSteps);
+      return;
+    }
 
     // Validate current step
-    if (this.validateCurrentStep()) {
-      const currentStep = this.steps[this.currentStep];
-      const nextStep = this.steps[this.currentStep + 1];
+    console.log("Validating current step...");
+    const validationResult = this.validateCurrentStep();
+    console.log("Validation result:", validationResult);
+
+    if (validationResult) {
+      // Get the actual HTML step indices from the mapping
+      const currentHtmlIndex = this.stepMapping[this.currentStep];
+      const nextHtmlIndex = this.stepMapping[this.currentStep + 1];
+      const currentStep = this.steps[currentHtmlIndex];
+      const nextStep = this.steps[nextHtmlIndex];
+      console.log("Current step element:", currentStep);
+      console.log("Next step element:", nextStep);
+      console.log("Current HTML index:", currentHtmlIndex);
+      console.log("Next HTML index:", nextHtmlIndex);
 
       // Animate step transition
       await this.transitionToStep(currentStep, nextStep, "next");
@@ -695,8 +733,9 @@ class OptimizedFormHandler {
       this.showStepValidationError();
 
       // Shake the current step to indicate error
-      if (this.steps && this.steps[this.currentStep]) {
-        this.shakeStep(this.steps[this.currentStep]);
+      if (this.steps && this.stepMapping[this.currentStep] !== undefined) {
+        const currentHtmlIndex = this.stepMapping[this.currentStep];
+        this.shakeStep(this.steps[currentHtmlIndex]);
       }
     }
   }
@@ -704,8 +743,11 @@ class OptimizedFormHandler {
   async previousStep() {
     if (!this.steps || this.currentStep <= 0) return;
 
-    const currentStep = this.steps[this.currentStep];
-    const prevStep = this.steps[this.currentStep - 1];
+    // Get the actual HTML step indices from the mapping
+    const currentHtmlIndex = this.stepMapping[this.currentStep];
+    const prevHtmlIndex = this.stepMapping[this.currentStep - 1];
+    const currentStep = this.steps[currentHtmlIndex];
+    const prevStep = this.steps[prevHtmlIndex];
 
     // Animate step transition
     await this.transitionToStep(currentStep, prevStep, "prev");
@@ -751,7 +793,15 @@ class OptimizedFormHandler {
     if (!this.steps) return;
 
     this.steps.forEach((step, index) => {
-      if (index === this.currentStep) {
+      // Get the logical step index from the mapping
+      const logicalStepIndex = Object.keys(this.stepMapping).find(
+        (key) => this.stepMapping[key] === index
+      );
+
+      if (
+        logicalStepIndex !== undefined &&
+        parseInt(logicalStepIndex) === this.currentStep
+      ) {
         step.classList.add("is-active");
         step.setAttribute("data-if-active", "true");
       } else {
@@ -762,8 +812,27 @@ class OptimizedFormHandler {
   }
 
   validateCurrentStep() {
-    if (!this.steps || !this.steps[this.currentStep]) return true;
-    const currentStepElement = this.steps[this.currentStep];
+    console.log("=== validateCurrentStep called ===");
+    console.log("- this.steps:", this.steps);
+    console.log("- this.currentStep:", this.currentStep);
+    console.log("- this.stepMapping:", this.stepMapping);
+
+    // Get the actual HTML step index from the mapping
+    const htmlStepIndex = this.stepMapping[this.currentStep];
+    console.log("- htmlStepIndex:", htmlStepIndex);
+    console.log(
+      "- this.steps[htmlStepIndex]:",
+      this.steps ? this.steps[htmlStepIndex] : "undefined"
+    );
+
+    if (!this.steps || !this.steps[htmlStepIndex]) {
+      console.log(
+        "Validation returning true due to missing steps or htmlStepIndex"
+      );
+      return true;
+    }
+    const currentStepElement = this.steps[htmlStepIndex];
+    console.log("- currentStepElement:", currentStepElement);
 
     // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
@@ -778,6 +847,9 @@ class OptimizedFormHandler {
     );
 
     const allFields = [...fields, ...validationFields];
+    console.log("- Fields found for validation:", allFields.length);
+    console.log("- Fields:", allFields);
+
     let isValid = true;
 
     allFields.forEach((field) => {
@@ -1333,6 +1405,9 @@ class OptimizedFormHandler {
   }
 
   resetForm() {
+    console.log("=== resetForm called ===");
+    console.log("Resetting currentStep from", this.currentStep, "to 0");
+
     // Reset form
     this.form.reset();
     this.currentStep = 0;
@@ -1354,6 +1429,9 @@ class OptimizedFormHandler {
   }
 
   showStep(stepIndex) {
+    console.log("=== showStep called ===");
+    console.log("Setting currentStep from", this.currentStep, "to", stepIndex);
+
     // Show step
     this.currentStep = stepIndex;
     this.updateStepStates();
