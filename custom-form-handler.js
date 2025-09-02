@@ -46,84 +46,6 @@ const utils = {
       document.head.appendChild(style);
     }
   },
-
-  addProgressAnimations: () => {
-    if (!document.getElementById("progress-animations")) {
-      const style = document.createElement("style");
-      style.id = "progress-animations";
-      style.textContent = `
-        [if-element="progress-step"] {
-          transition: opacity 200ms ease-out;
-        }
-        
-        [if-element="progress-step"].is-active {
-          opacity: 1 !important;
-          transform: scale(1.05);
-          transition: all 200ms ease-out;
-        }
-        
-        [if-element="progress-step"].is-completed {
-          opacity: 1 !important;
-          transition: opacity 200ms ease-out;
-        }
-        
-        [if-element="progress-step"]:not(.is-active):not(.is-completed) {
-          opacity: 0.3 !important;
-          transition: opacity 200ms ease-out;
-        }
-        
-        [if-element="progress-bar"] {
-          transition: width 300ms ease-out;
-        }
-        
-        .quiz_progress-line-fill {
-          transition: width 300ms ease-out, opacity 300ms ease-out;
-          background: linear-gradient(90deg, #4CAF50, #45a049);
-          border-radius: 4px;
-          height: 100%;
-        }
-        
-        .quiz_progress-line-fill.is-completed {
-          background: linear-gradient(90deg, #2196F3, #1976D2);
-          box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
-        }
-        
-        /* Initial fade-away animation styles */
-        [if-element="progress-step"].initial-fade {
-          opacity: 0.3 !important;
-          transition: opacity 2000ms ease-out, transform 2000ms ease-out;
-        }
-        
-        [if-element="progress-step"].initial-fade.is-active,
-        [if-element="progress-step"].initial-fade.is-completed {
-          opacity: 0.3 !important;
-        }
-        
-        /* Default state styles to match the second image */
-        [if-element="progress-step"]:not(.is-active) {
-          opacity: 0.7 !important;
-          background: transparent !important;
-          border: 2px solid #d0d0d0 !important;
-          color: #666 !important;
-        }
-        
-        [if-element="progress-step"].is-active {
-          opacity: 1 !important;
-          background: transparent !important;
-          border: 2px solid #b0b0b0 !important;
-          color: #333 !important;
-        }
-        
-        /* Progress lines default state */
-        .progress-line, .progress-connection, [if-element="progress-line"] {
-          background-color: #d0d0d0 !important;
-          border-color: #d0d0d0 !important;
-          opacity: 0.6 !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  },
 };
 
 // Main Form Handler Class
@@ -163,7 +85,6 @@ class OptimizedFormHandler {
 
     // Add animation CSS
     utils.addShakeAnimation();
-    utils.addProgressAnimations();
   }
 
   setupForm() {
@@ -506,88 +427,37 @@ class OptimizedFormHandler {
   }
 
   startInitialFadeAway() {
-    // Gradually fade away initially active steps to match inactive state
-    const progressSteps = utils.qa(
-      '[if-element="progress-step"]',
-      document.body
-    );
-
-    if (progressSteps.length === 0) return;
-
-    // Start with a delay to let the page load
+    // Gradually remove is-completed classes from progress elements
     setTimeout(() => {
-      progressSteps.forEach((step, index) => {
-        if (index === 0) {
-          // First step - keep active but reset to default style
-          step.style.transition = "all 2000ms ease-out";
-          step.classList.add("is-active");
-          step.classList.remove("is-completed");
-          // Reset to default active state (light grey outline)
-          step.style.opacity = "1";
-        } else {
-          // All other steps - reset to inactive state but keep visible
-          step.style.transition = "all 2000ms ease-out";
-          step.style.opacity = "0.7";
-          step.classList.remove("is-active", "is-completed");
-
-          // Set to light grey but not too faded
-          step.style.backgroundColor = "transparent";
-          step.style.borderColor = "#d0d0d0";
-          step.style.color = "#666";
+      // Remove is-completed class from all progress points at the same time
+      const progressPoints = utils.qa(
+        ".quiz_progress-point.is-completed",
+        document.body
+      );
+      progressPoints.forEach((point, index) => {
+        if (index > 0) {
+          // Skip first point, remove from others at the same time
+          point.classList.remove("is-completed");
         }
       });
 
-      // Reset progress line fill to default state
-      const progressLineFill = utils.qa(
-        ".quiz_progress-line-fill",
+      // Remove is-completed class from progress line fills at the same time
+      const progressLineFills = utils.qa(
+        ".quiz_progress-line-fill.is-completed",
         document.body
       );
-      if (progressLineFill.length) {
-        progressLineFill.forEach((fill) => {
-          // Completely reset to default state
-          fill.style.transition = "all 2000ms ease-out";
-          fill.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
-          fill.style.opacity = "1";
-          fill.classList.remove("is-completed");
+      progressLineFills.forEach((fill) => {
+        fill.classList.remove("is-completed");
+      });
 
-          // Reset to default styling
-          fill.style.background = "";
-          fill.style.boxShadow = "";
-        });
-      }
-
-      // Reset all progress line connections to default state
-      const progressLines = utils.qa(
-        ".progress-line, .progress-connection, [if-element='progress-line'], .quiz_progress-line",
-        document.body
-      );
-      if (progressLines.length) {
-        progressLines.forEach((line) => {
-          // Reset all lines to default inactive state
-          line.style.transition = "all 2000ms ease-out";
-          line.style.opacity = "0.6";
-          line.style.backgroundColor = "#d0d0d0"; // Light grey but visible
-          line.style.borderColor = "#d0d0d0";
-        });
-      }
-
-      // Reset progress bar to default state
-      const progressBar = utils.qa(
-        '[if-element="progress-bar"]',
-        document.body
-      );
-      if (progressBar.length) {
-        progressBar.forEach((bar) => {
-          // Completely reset to default state
-          bar.style.transition = "all 2000ms ease-out";
-          bar.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
-          bar.style.opacity = "1";
-          bar.style.background = "#d0d0d0"; // Light grey but visible
-        });
-      }
-
-      // Reset any custom progress styling to default
-      this.resetProgressToDefault();
+      // Also handle any other elements with is-completed class at the same time
+      const allCompletedElements = utils.qa(".is-completed", document.body);
+      allCompletedElements.forEach((element, index) => {
+        if (index > 0) {
+          // Skip first element, remove from others at the same time
+          element.classList.remove("is-completed");
+        }
+      });
     }, 500); // Start after 500ms delay
   }
 
