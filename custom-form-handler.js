@@ -308,7 +308,7 @@ class OptimizedFormHandler {
   }
 
   initializeProgressSteps() {
-    // Initialize existing progress steps with proper classes and fade effects
+    // Initialize existing progress steps to START with steps 1-4 active (like top image)
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
@@ -318,33 +318,43 @@ class OptimizedFormHandler {
         // Set transition for smooth animations
         step.style.transition = "opacity 200ms ease-out";
 
-        if (index === 0) {
-          // First step - active and visible
+        if (index <= 3) {
+          // Steps 1-4: Start as active (dark red)
           step.classList.add("is-active");
-          step.classList.remove("is-completed");
+          step.classList.add("is-completed");
           step.style.opacity = "1";
+          step.style.backgroundColor = "#8B0000"; // Dark red
+          step.style.borderColor = "#8B0000";
+          step.style.color = "white";
         } else {
-          // Other steps - inactive and faded
+          // Steps 5-7: Start as inactive (light grey)
           step.classList.remove("is-active", "is-completed");
-          step.style.opacity = "0.3";
+          step.style.opacity = "0.7";
+          step.style.backgroundColor = "transparent";
+          step.style.borderColor = "#d0d0d0";
+          step.style.color = "#666";
         }
       });
     }
 
-    // Initialize progress bar width with smooth transition
+    // Initialize progress bar to start with 4/7 steps filled (like top image)
     const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
     if (progressBar.length) {
-      const initialProgress = 1 / this.totalSteps;
+      const initialProgress = 4 / this.totalSteps; // 4 out of 7 steps
       progressBar.forEach((bar) => {
         bar.style.transition = "width 300ms ease-out";
         bar.style.setProperty("width", `${initialProgress * 100}%`);
+        bar.style.background = "#8B0000"; // Dark red
       });
     }
 
-    // Initialize progress line fill
-    this.updateProgressLineFill();
+    // Initialize progress line fill to start with 4/7 steps filled
+    this.initializeProgressLineFill();
 
-    // Start the initial fade-away animation for pre-existing active steps
+    // Initialize progress line connections to start with dark red for first 4 steps
+    this.initializeProgressLines();
+
+    // Start the initial fade-away animation to reset to default state
     this.startInitialFadeAway();
   }
 
@@ -407,6 +417,48 @@ class OptimizedFormHandler {
           fill.classList.add("is-completed");
         } else {
           fill.classList.remove("is-completed");
+        }
+      });
+    }
+  }
+
+  initializeProgressLineFill() {
+    // Initialize progress line fill to start with 4/7 steps filled (like top image)
+    const progressLineFill = utils.qa(
+      ".quiz_progress-line-fill",
+      document.body
+    );
+    if (progressLineFill.length) {
+      progressLineFill.forEach((fill) => {
+        fill.style.transition = "width 300ms ease-out";
+        fill.style.setProperty("width", "57.14%"); // 4/7 steps = 57.14%
+        fill.style.background = "#8B0000"; // Dark red
+        fill.classList.add("is-completed");
+      });
+    }
+  }
+
+  initializeProgressLines() {
+    // Initialize progress line connections to start with dark red for first 4 steps
+    const progressLines = utils.qa(
+      ".progress-line, .progress-connection, [if-element='progress-line'], .quiz_progress-line",
+      document.body
+    );
+
+    if (progressLines.length) {
+      progressLines.forEach((line, index) => {
+        if (index < 4) {
+          // First 4 lines: dark red (active)
+          line.style.transition = "all 2000ms ease-out";
+          line.style.backgroundColor = "#8B0000"; // Dark red
+          line.style.borderColor = "#8B0000";
+          line.style.opacity = "1";
+        } else {
+          // Lines 5-7: light grey (inactive)
+          line.style.transition = "all 2000ms ease-out";
+          line.style.backgroundColor = "#d0d0d0"; // Light grey
+          line.style.borderColor = "#d0d0d0";
+          line.style.opacity = "0.6";
         }
       });
     }
