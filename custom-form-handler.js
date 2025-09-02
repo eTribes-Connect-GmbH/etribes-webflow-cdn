@@ -75,6 +75,18 @@ const utils = {
         [if-element="progress-bar"] {
           transition: width 300ms ease-out;
         }
+        
+        .quiz_progress-line-fill {
+          transition: width 300ms ease-out, opacity 300ms ease-out;
+          background: linear-gradient(90deg, #4CAF50, #45a049);
+          border-radius: 4px;
+          height: 100%;
+        }
+        
+        .quiz_progress-line-fill.is-completed {
+          background: linear-gradient(90deg, #2196F3, #1976D2);
+          box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
       `;
       document.head.appendChild(style);
     }
@@ -295,6 +307,9 @@ class OptimizedFormHandler {
         bar.style.setProperty("width", `${initialProgress * 100}%`);
       });
     }
+
+    // Initialize progress line fill
+    this.updateProgressLineFill();
   }
 
   updateProgress() {
@@ -337,6 +352,58 @@ class OptimizedFormHandler {
         bar.style.setProperty("width", `${progressPercentage * 100}%`);
       });
     }
+  }
+
+  updateProgressLineFill() {
+    // Update progress line fill with quiz_progress-line-fill class
+    const progressLineFill = utils.qa(
+      ".quiz_progress-line-fill",
+      document.body
+    );
+    if (progressLineFill.length) {
+      const progressPercentage = (this.currentStep + 1) / this.totalSteps;
+      progressLineFill.forEach((fill) => {
+        fill.style.transition = "width 300ms ease-out";
+        fill.style.setProperty("width", `${progressPercentage * 100}%`);
+
+        // Add is-completed class for styling
+        if (progressPercentage > 0) {
+          fill.classList.add("is-completed");
+        } else {
+          fill.classList.remove("is-completed");
+        }
+      });
+    }
+  }
+
+  animateProgressFadeAway() {
+    // Animate existing progress to fade away slowly and reset to default
+    const progressElements = [
+      ...utils.qa('[if-element="progress-bar"]', document.body),
+      ...utils.qa(".quiz_progress-line-fill", document.body),
+    ];
+
+    progressElements.forEach((element) => {
+      // First, animate to current progress
+      const currentProgress = (this.currentStep + 1) / this.totalSteps;
+      element.style.transition = "width 300ms ease-out";
+      element.style.setProperty("width", `${currentProgress * 100}%`);
+
+      // Then, after a delay, slowly fade away and reset
+      setTimeout(() => {
+        element.style.transition =
+          "width 800ms ease-in-out, opacity 800ms ease-in-out";
+        element.style.opacity = "0.3";
+
+        // Reset to default state
+        setTimeout(() => {
+          element.style.transition =
+            "width 500ms ease-out, opacity 500ms ease-in";
+          element.style.opacity = "1";
+          element.style.setProperty("width", `${currentProgress * 100}%`);
+        }, 800);
+      }, 300);
+    });
   }
 
   async nextStep() {
@@ -406,6 +473,9 @@ class OptimizedFormHandler {
 
     // Update progress steps with animation after step change
     this.animateProgressSteps(direction);
+
+    // Animate progress fade away effect
+    this.animateProgressFadeAway();
   }
 
   updateStepStates() {
