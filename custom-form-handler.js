@@ -87,6 +87,17 @@ const utils = {
           background: linear-gradient(90deg, #2196F3, #1976D2);
           box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
         }
+        
+        /* Initial fade-away animation styles */
+        [if-element="progress-step"].initial-fade {
+          opacity: 0.3 !important;
+          transition: opacity 2000ms ease-out, transform 2000ms ease-out;
+        }
+        
+        [if-element="progress-step"].initial-fade.is-active,
+        [if-element="progress-step"].initial-fade.is-completed {
+          opacity: 0.3 !important;
+        }
       `;
       document.head.appendChild(style);
     }
@@ -310,6 +321,9 @@ class OptimizedFormHandler {
 
     // Initialize progress line fill
     this.updateProgressLineFill();
+
+    // Start the initial fade-away animation for pre-existing active steps
+    this.startInitialFadeAway();
   }
 
   updateProgress() {
@@ -404,6 +418,81 @@ class OptimizedFormHandler {
         }, 800);
       }, 300);
     });
+  }
+
+  startInitialFadeAway() {
+    // Gradually fade away initially active steps to match inactive state
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"]',
+      document.body
+    );
+
+    if (progressSteps.length === 0) return;
+
+    // Start with a delay to let the page load
+    setTimeout(() => {
+      progressSteps.forEach((step, index) => {
+        if (index > 0) {
+          // Skip the first step (keep it active)
+          // Gradually fade away over 2 seconds
+          step.style.transition =
+            "opacity 2000ms ease-out, transform 2000ms ease-out";
+          step.style.opacity = "0.3";
+
+          // Also remove any active/completed classes gradually
+          setTimeout(() => {
+            step.classList.remove("is-active", "is-completed");
+          }, 1000); // Remove classes halfway through the fade
+        }
+      });
+
+      // Also fade away the progress line fill initially
+      const progressLineFill = utils.qa(
+        ".quiz_progress-line-fill",
+        document.body
+      );
+      if (progressLineFill.length) {
+        progressLineFill.forEach((fill) => {
+          // Start with full width, then gradually reduce
+          fill.style.transition =
+            "width 2000ms ease-out, opacity 2000ms ease-out";
+          fill.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
+          fill.style.opacity = "0.7"; // Slightly faded
+        });
+      }
+
+      // Fade away progress line connections (lines between steps)
+      const progressLines = utils.qa(
+        ".progress-line, .progress-connection, [if-element='progress-line']",
+        document.body
+      );
+      if (progressLines.length) {
+        progressLines.forEach((line, index) => {
+          if (index > 0) {
+            // Keep first line, fade others
+            line.style.transition =
+              "opacity 2000ms ease-out, background-color 2000ms ease-out";
+            line.style.opacity = "0.3";
+            // Change from dark red to light grey
+            line.style.backgroundColor = "#ccc";
+          }
+        });
+      }
+
+      // Fade away progress bar initially
+      const progressBar = utils.qa(
+        '[if-element="progress-bar"]',
+        document.body
+      );
+      if (progressBar.length) {
+        progressBar.forEach((bar) => {
+          bar.style.transition =
+            "width 2000ms ease-out, opacity 2000ms ease-out";
+          bar.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
+          bar.style.opacity = "0.7"; // Slightly faded
+        });
+      }
+    }, 500); // Start after 500ms delay
   }
 
   async nextStep() {
