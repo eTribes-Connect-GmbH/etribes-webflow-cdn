@@ -100,6 +100,9 @@ class OptimizedFormHandler {
 
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
+    console.log("setupForm: Found steps with [if-step] attribute:", this.steps);
+    console.log("setupForm: Steps length:", this.steps.length);
+
     this.totalSteps = this.steps.length;
 
     // Initialize step states
@@ -107,11 +110,19 @@ class OptimizedFormHandler {
   }
 
   initializeStepStates(steps) {
+    console.log("initializeStepStates called with steps:", steps);
+    console.log("Steps length:", steps.length);
+
     steps.forEach((step, index) => {
+      console.log(`Step ${index}:`, step);
+      console.log(`Step ${index} display before:`, step.style.display);
+
       // Hide all steps initially, only show first step when user starts
       step.style.display = "none";
       step.classList.remove("is-active");
       step.removeAttribute("data-if-active");
+
+      console.log(`Step ${index} display after:`, step.style.display);
     });
   }
 
@@ -252,10 +263,22 @@ class OptimizedFormHandler {
     }
 
     // Also show the first step when user starts the quiz
+    console.log("Checking steps array:", this.steps);
+    console.log("Steps length:", this.steps ? this.steps.length : "undefined");
+
     if (this.steps && this.steps[0]) {
+      console.log("First step found, making it visible");
+      console.log("First step element:", this.steps[0]);
+      console.log("First step display before:", this.steps[0].style.display);
+
       this.steps[0].style.display = "block";
       this.steps[0].classList.add("is-active");
       this.steps[0].setAttribute("data-if-active", "true");
+
+      console.log("First step display after:", this.steps[0].style.display);
+      console.log("First step classes after:", this.steps[0].className);
+    } else {
+      console.log("No steps found or steps[0] is undefined");
     }
 
     // Ensure currentStep is set to 0 when starting the quiz
