@@ -255,16 +255,26 @@ class OptimizedFormHandler {
         const progressLineFill = step.querySelector(".quiz_progress-line-fill");
         const progressName = step.querySelector(".quiz_progress-name");
 
-        if (progressGraphic)
-          progressGraphic.classList.replace("is-active", "is-completed");
-        if (progressPoint)
-          progressPoint.classList.replace("is-active", "is-completed");
-        if (progressLine)
-          progressLine.classList.replace("is-active", "is-completed");
-        if (progressLineFill)
-          progressLineFill.classList.replace("is-active", "is-completed");
-        if (progressName)
-          progressName.classList.replace("is-active", "is-completed");
+        if (progressGraphic) {
+          progressGraphic.classList.remove("is-active");
+          progressGraphic.classList.add("is-completed");
+        }
+        if (progressPoint) {
+          progressPoint.classList.remove("is-active");
+          progressPoint.classList.add("is-completed");
+        }
+        if (progressLine) {
+          progressLine.classList.remove("is-active");
+          progressLine.classList.add("is-completed");
+        }
+        if (progressLineFill) {
+          progressLineFill.classList.remove("is-active");
+          progressLineFill.classList.add("is-completed");
+        }
+        if (progressName) {
+          progressName.classList.remove("is-active");
+          progressName.classList.add("is-completed");
+        }
       } else if (index === this.currentStep) {
         // Current active step - add is-active to outer div and all children
         step.classList.remove("is-completed");
@@ -276,16 +286,26 @@ class OptimizedFormHandler {
         const progressLineFill = step.querySelector(".quiz_progress-line-fill");
         const progressName = step.querySelector(".quiz_progress-name");
 
-        if (progressGraphic)
-          progressGraphic.classList.replace("is-completed", "is-active");
-        if (progressPoint)
-          progressPoint.classList.replace("is-completed", "is-active");
-        if (progressLine)
-          progressLine.classList.replace("is-completed", "is-active");
-        if (progressLineFill)
-          progressLineFill.classList.replace("is-completed", "is-active");
-        if (progressName)
-          progressName.classList.replace("is-completed", "is-active");
+        if (progressGraphic) {
+          progressGraphic.classList.remove("is-completed");
+          progressGraphic.classList.add("is-active");
+        }
+        if (progressPoint) {
+          progressPoint.classList.remove("is-completed");
+          progressPoint.classList.add("is-active");
+        }
+        if (progressLine) {
+          progressLine.classList.remove("is-completed");
+          progressLine.classList.add("is-active");
+        }
+        if (progressLineFill) {
+          progressLineFill.classList.remove("is-completed");
+          progressLineFill.classList.add("is-active");
+        }
+        if (progressName) {
+          progressName.classList.remove("is-completed");
+          progressName.classList.add("is-active");
+        }
       } else {
         // Future steps - remove all classes
         step.classList.remove("is-active", "is-completed");
