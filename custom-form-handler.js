@@ -101,24 +101,24 @@ const utils = {
         
         /* Default state styles to match the second image */
         [if-element="progress-step"]:not(.is-active) {
-          opacity: 0.3 !important;
+          opacity: 0.7 !important;
           background: transparent !important;
-          border: 2px solid #e0e0e0 !important;
-          color: #999 !important;
+          border: 2px solid #d0d0d0 !important;
+          color: #666 !important;
         }
         
         [if-element="progress-step"].is-active {
           opacity: 1 !important;
           background: transparent !important;
-          border: 2px solid #e0e0e0 !important;
+          border: 2px solid #b0b0b0 !important;
           color: #333 !important;
         }
         
         /* Progress lines default state */
         .progress-line, .progress-connection, [if-element="progress-line"] {
-          background-color: #e0e0e0 !important;
-          border-color: #e0e0e0 !important;
-          opacity: 0.3 !important;
+          background-color: #d0d0d0 !important;
+          border-color: #d0d0d0 !important;
+          opacity: 0.6 !important;
         }
       `;
       document.head.appendChild(style);
@@ -462,15 +462,15 @@ class OptimizedFormHandler {
           // Reset to default active state (light grey outline)
           step.style.opacity = "1";
         } else {
-          // All other steps - completely reset to inactive state
+          // All other steps - reset to inactive state but keep visible
           step.style.transition = "all 2000ms ease-out";
-          step.style.opacity = "0.3";
+          step.style.opacity = "0.7";
           step.classList.remove("is-active", "is-completed");
 
-          // Remove any custom styling to get default inactive appearance
-          step.style.backgroundColor = "";
-          step.style.borderColor = "";
-          step.style.color = "";
+          // Set to light grey but not too faded
+          step.style.backgroundColor = "transparent";
+          step.style.borderColor = "#d0d0d0";
+          step.style.color = "#666";
         }
       });
 
@@ -502,9 +502,9 @@ class OptimizedFormHandler {
         progressLines.forEach((line) => {
           // Reset all lines to default inactive state
           line.style.transition = "all 2000ms ease-out";
-          line.style.opacity = "0.3";
-          line.style.backgroundColor = "#e0e0e0"; // Very light grey
-          line.style.borderColor = "#e0e0e0";
+          line.style.opacity = "0.6";
+          line.style.backgroundColor = "#d0d0d0"; // Light grey but visible
+          line.style.borderColor = "#d0d0d0";
         });
       }
 
@@ -519,7 +519,7 @@ class OptimizedFormHandler {
           bar.style.transition = "all 2000ms ease-out";
           bar.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
           bar.style.opacity = "1";
-          bar.style.background = "#e0e0e0"; // Very light grey
+          bar.style.background = "#d0d0d0"; // Light grey but visible
         });
       }
 
@@ -552,10 +552,10 @@ class OptimizedFormHandler {
         element.classList.contains("is-completed")
       ) {
         element.style.transition = "all 2000ms ease-out";
-        element.style.opacity = "0.3";
-        element.style.backgroundColor = "#e0e0e0";
-        element.style.borderColor = "#e0e0e0";
-        element.style.color = "#999";
+        element.style.opacity = "0.6";
+        element.style.backgroundColor = "#d0d0d0";
+        element.style.borderColor = "#d0d0d0";
+        element.style.color = "#666";
       }
     });
   }
