@@ -373,23 +373,10 @@ class OptimizedFormHandler {
   }
 
   removeAllCompletedClasses() {
-    // Remove all completed classes from all progress elements on page load
-    const allProgressElements = utils.qa(
-      '.quiz_progress-graphic, .quiz_progress-point, .quiz_progress-line, .quiz_progress-line-fill, [if-element="progress-step"], [if-element="progress-bar"]',
-      document.body
-    );
-
-    allProgressElements.forEach((element) => {
-      element.classList.remove("is-active", "is-completed");
-    });
-
-    // Also remove is-completed from the outer progress step divs
-    const progressSteps = utils.qa(
-      '[if-element="progress-step"]',
-      document.body
-    );
-    progressSteps.forEach((step) => {
-      step.classList.remove("is-active", "is-completed");
+    // Simple approach: remove is-active from every div we find
+    const allDivs = utils.qa("div", document.body);
+    allDivs.forEach((div) => {
+      div.classList.remove("is-active", "is-completed");
     });
   }
 
@@ -462,39 +449,10 @@ class OptimizedFormHandler {
   }
 
   startInitialFadeAway() {
-    // Remove is-completed classes from all progress elements immediately on page load
-
-    // Remove is-completed from outer progress step divs
-    const progressSteps = utils.qa(
-      '[if-element="progress-step"].is-completed',
-      document.body
-    );
-    progressSteps.forEach((step) => {
-      step.classList.remove("is-completed");
-    });
-
-    // Remove is-completed class from all progress points at the same time
-    const progressPoints = utils.qa(
-      ".quiz_progress-point.is-completed",
-      document.body
-    );
-    progressPoints.forEach((point) => {
-      point.classList.remove("is-completed");
-    });
-
-    // Remove is-completed class from progress line fills at the same time
-    const progressLineFills = utils.qa(
-      ".quiz_progress-line-fill.is-completed",
-      document.body
-    );
-    progressLineFills.forEach((fill) => {
-      fill.classList.remove("is-completed");
-    });
-
-    // Also handle any other elements with is-completed class at the same time
-    const allCompletedElements = utils.qa(".is-completed", document.body);
-    allCompletedElements.forEach((element) => {
-      element.classList.remove("is-completed");
+    // Simple approach: remove is-completed from every div we find
+    const allDivs = utils.qa("div", document.body);
+    allDivs.forEach((div) => {
+      div.classList.remove("is-completed");
     });
   }
 
