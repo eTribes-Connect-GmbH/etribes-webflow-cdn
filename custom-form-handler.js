@@ -309,6 +309,7 @@ class OptimizedFormHandler {
 
   initializeProgressSteps() {
     // Initialize existing progress steps to START with steps 1-4 active (like top image)
+    // Since HTML already has active classes, we just need to style them properly
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
@@ -319,20 +320,24 @@ class OptimizedFormHandler {
         step.style.transition = "opacity 200ms ease-out";
 
         if (index <= 3) {
-          // Steps 1-4: Start as active (dark red)
+          // Steps 1-4: Start as active (dark red) - like top image
           step.classList.add("is-active");
           step.classList.add("is-completed");
           step.style.opacity = "1";
           step.style.backgroundColor = "#8B0000"; // Dark red
           step.style.borderColor = "#8B0000";
           step.style.color = "white";
+          step.style.borderWidth = "2px";
+          step.style.borderStyle = "solid";
         } else {
-          // Steps 5-7: Start as inactive (light grey)
+          // Steps 5-7: Start as inactive (light grey) - like top image
           step.classList.remove("is-active", "is-completed");
           step.style.opacity = "0.7";
           step.style.backgroundColor = "transparent";
           step.style.borderColor = "#d0d0d0";
-          step.style.color = "#666";
+          step.style.color = "#999";
+          step.style.borderWidth = "2px";
+          step.style.borderStyle = "solid";
         }
       });
     }
@@ -345,6 +350,8 @@ class OptimizedFormHandler {
         bar.style.transition = "width 300ms ease-out";
         bar.style.setProperty("width", `${initialProgress * 100}%`);
         bar.style.background = "#8B0000"; // Dark red
+        bar.style.height = "4px";
+        bar.style.borderRadius = "2px";
       });
     }
 
@@ -354,7 +361,7 @@ class OptimizedFormHandler {
     // Initialize progress line connections to start with dark red for first 4 steps
     this.initializeProgressLines();
 
-    // Start the initial fade-away animation to reset to default state
+    // Start the fade-away animation to reset to inactive state (like bottom image)
     this.startInitialFadeAway();
   }
 
@@ -433,13 +440,15 @@ class OptimizedFormHandler {
         fill.style.transition = "width 300ms ease-out";
         fill.style.setProperty("width", "57.14%"); // 4/7 steps = 57.14%
         fill.style.background = "#8B0000"; // Dark red
+        fill.style.height = "4px";
+        fill.style.borderRadius = "2px";
         fill.classList.add("is-completed");
       });
     }
   }
 
   initializeProgressLines() {
-    // Initialize progress line connections to start with dark red for first 4 steps
+    // Initialize progress line connections to start with dark red for first 4 steps (like top image)
     const progressLines = utils.qa(
       ".progress-line, .progress-connection, [if-element='progress-line'], .quiz_progress-line",
       document.body
@@ -453,12 +462,14 @@ class OptimizedFormHandler {
           line.style.backgroundColor = "#8B0000"; // Dark red
           line.style.borderColor = "#8B0000";
           line.style.opacity = "1";
+          line.style.height = "2px";
         } else {
           // Lines 5-7: light grey (inactive)
           line.style.transition = "all 2000ms ease-out";
           line.style.backgroundColor = "#d0d0d0"; // Light grey
           line.style.borderColor = "#d0d0d0";
           line.style.opacity = "0.6";
+          line.style.height = "2px";
         }
       });
     }
