@@ -482,24 +482,24 @@ var Gr = _e((j) => {
     );
   }
 
-  function hn(t) {
-    return I(this, null, function* () {
-      const e = yield fetch(
-        `https://n8n.tech.etribes.de/webhook-test/d0ab579e-92d2-4a72-924a-2e0fe83af7b7`,
-        {
-          headers: {
-            r: window.location.href,
-          },
-        }
-      );
-      if (!e.ok) {
-        const r = yield e.text();
-        throw new Error(r);
-      }
-      const n = yield e.json();
-      return mn(n.config);
-    });
-  }
+  //   function hn(t) {
+  //     return I(this, null, function* () {
+  //       const e = yield fetch(
+  //         `https://n8n.tech.etribes.de/webhook-test/d0ab579e-92d2-4a72-924a-2e0fe83af7b7`,
+  //         {
+  //           headers: {
+  //             r: window.location.href,
+  //           },
+  //         }
+  //       );
+  //       if (!e.ok) {
+  //         const r = yield e.text();
+  //         throw new Error(r);
+  //       }
+  //       const n = yield e.json();
+  //       return mn(n.config);
+  //     });
+  //   }
   const Zt = new Map(),
     jt = new Map();
 
@@ -2838,7 +2838,20 @@ var Gr = _e((j) => {
   I(j, null, function* () {
     var Q;
     if (!y) return;
-    const t = yield hn(y);
+    //const t = yield hn(y);
+    const t = {
+      variables: [],
+      progressSteps: [],
+      generalSettings: {
+        progressStepClasses: "",
+        customActionUrlWithoutRedirect: false,
+        disableNextButtonOptions: {
+          isActive: false,
+        },
+      },
+      conditionalStyles: [],
+      inputs: [],
+    };
     L("config", t);
     const e = Pn(E(y));
     let n = t.blocks.find((u) => u.id === e),
