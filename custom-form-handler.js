@@ -187,32 +187,45 @@ class OptimizedFormHandler {
   }
 
   activateFirstProgressNode() {
-    // Find the first progress graphic and activate it
-    const firstProgressGraphic = utils.qa(
-      ".quiz_progress-graphic",
+    // Find the first progress step and activate it completely
+    const firstProgressStep = utils.qa(
+      '[if-element="progress-step"]',
       document.body
     )[0];
-    if (firstProgressGraphic) {
-      // Remove any existing active classes
-      utils.qa(".quiz_progress-graphic", document.body).forEach((graphic) => {
-        graphic.classList.remove("is-active");
-      });
+    if (firstProgressStep) {
+      // Remove any existing active classes from all progress steps
+      utils
+        .qa('[if-element="progress-step"]', document.body)
+        .forEach((step) => {
+          step.classList.remove("is-active");
+        });
 
-      // Add is-active to first progress graphic and its children
-      firstProgressGraphic.classList.add("is-active");
-      const progressPoint = firstProgressGraphic.querySelector(
+      // Add is-active to the first progress step (parent div)
+      firstProgressStep.classList.add("is-active");
+
+      // Find and activate all child elements
+      const progressGraphic = firstProgressStep.querySelector(
+        ".quiz_progress-graphic"
+      );
+      const progressPoint = firstProgressStep.querySelector(
         ".quiz_progress-point"
       );
-      const progressLine = firstProgressGraphic.querySelector(
+      const progressLine = firstProgressStep.querySelector(
         ".quiz_progress-line"
       );
-      const progressLineFill = firstProgressGraphic.querySelector(
+      const progressLineFill = firstProgressStep.querySelector(
         ".quiz_progress-line-fill"
       );
+      const progressName = firstProgressStep.querySelector(
+        ".quiz_progress-name"
+      );
 
+      // Add is-active to all child elements
+      if (progressGraphic) progressGraphic.classList.add("is-active");
       if (progressPoint) progressPoint.classList.add("is-active");
       if (progressLine) progressLine.classList.add("is-active");
       if (progressLineFill) progressLineFill.classList.add("is-active");
+      if (progressName) progressName.classList.add("is-active");
     }
 
     // Also show the first step when user starts the quiz
@@ -369,6 +382,15 @@ class OptimizedFormHandler {
     allProgressElements.forEach((element) => {
       element.classList.remove("is-active", "is-completed");
     });
+
+    // Also remove is-completed from the outer progress step divs
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"]',
+      document.body
+    );
+    progressSteps.forEach((step) => {
+      step.classList.remove("is-active", "is-completed");
+    });
   }
 
   updateProgress() {
@@ -441,6 +463,16 @@ class OptimizedFormHandler {
 
   startInitialFadeAway() {
     // Remove is-completed classes from all progress elements immediately on page load
+
+    // Remove is-completed from outer progress step divs
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"].is-completed',
+      document.body
+    );
+    progressSteps.forEach((step) => {
+      step.classList.remove("is-completed");
+    });
+
     // Remove is-completed class from all progress points at the same time
     const progressPoints = utils.qa(
       ".quiz_progress-point.is-completed",
