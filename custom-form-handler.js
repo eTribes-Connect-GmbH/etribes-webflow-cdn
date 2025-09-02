@@ -98,6 +98,28 @@ const utils = {
         [if-element="progress-step"].initial-fade.is-completed {
           opacity: 0.3 !important;
         }
+        
+        /* Default state styles to match the second image */
+        [if-element="progress-step"]:not(.is-active) {
+          opacity: 0.3 !important;
+          background: transparent !important;
+          border: 2px solid #e0e0e0 !important;
+          color: #999 !important;
+        }
+        
+        [if-element="progress-step"].is-active {
+          opacity: 1 !important;
+          background: transparent !important;
+          border: 2px solid #e0e0e0 !important;
+          color: #333 !important;
+        }
+        
+        /* Progress lines default state */
+        .progress-line, .progress-connection, [if-element="progress-line"] {
+          background-color: #e0e0e0 !important;
+          border-color: #e0e0e0 !important;
+          opacity: 0.3 !important;
+        }
       `;
       document.head.appendChild(style);
     }
@@ -432,67 +454,110 @@ class OptimizedFormHandler {
     // Start with a delay to let the page load
     setTimeout(() => {
       progressSteps.forEach((step, index) => {
-        if (index > 0) {
-          // Skip the first step (keep it active)
-          // Gradually fade away over 2 seconds
-          step.style.transition =
-            "opacity 2000ms ease-out, transform 2000ms ease-out";
+        if (index === 0) {
+          // First step - keep active but reset to default style
+          step.style.transition = "all 2000ms ease-out";
+          step.classList.add("is-active");
+          step.classList.remove("is-completed");
+          // Reset to default active state (light grey outline)
+          step.style.opacity = "1";
+        } else {
+          // All other steps - completely reset to inactive state
+          step.style.transition = "all 2000ms ease-out";
           step.style.opacity = "0.3";
+          step.classList.remove("is-active", "is-completed");
 
-          // Also remove any active/completed classes gradually
-          setTimeout(() => {
-            step.classList.remove("is-active", "is-completed");
-          }, 1000); // Remove classes halfway through the fade
+          // Remove any custom styling to get default inactive appearance
+          step.style.backgroundColor = "";
+          step.style.borderColor = "";
+          step.style.color = "";
         }
       });
 
-      // Also fade away the progress line fill initially
+      // Reset progress line fill to default state
       const progressLineFill = utils.qa(
         ".quiz_progress-line-fill",
         document.body
       );
       if (progressLineFill.length) {
         progressLineFill.forEach((fill) => {
-          // Start with full width, then gradually reduce
-          fill.style.transition =
-            "width 2000ms ease-out, opacity 2000ms ease-out";
+          // Completely reset to default state
+          fill.style.transition = "all 2000ms ease-out";
           fill.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
-          fill.style.opacity = "0.7"; // Slightly faded
+          fill.style.opacity = "1";
+          fill.classList.remove("is-completed");
+
+          // Reset to default styling
+          fill.style.background = "";
+          fill.style.boxShadow = "";
         });
       }
 
-      // Fade away progress line connections (lines between steps)
+      // Reset all progress line connections to default state
       const progressLines = utils.qa(
-        ".progress-line, .progress-connection, [if-element='progress-line']",
+        ".progress-line, .progress-connection, [if-element='progress-line'], .quiz_progress-line",
         document.body
       );
       if (progressLines.length) {
-        progressLines.forEach((line, index) => {
-          if (index > 0) {
-            // Keep first line, fade others
-            line.style.transition =
-              "opacity 2000ms ease-out, background-color 2000ms ease-out";
-            line.style.opacity = "0.3";
-            // Change from dark red to light grey
-            line.style.backgroundColor = "#ccc";
-          }
+        progressLines.forEach((line) => {
+          // Reset all lines to default inactive state
+          line.style.transition = "all 2000ms ease-out";
+          line.style.opacity = "0.3";
+          line.style.backgroundColor = "#e0e0e0"; // Very light grey
+          line.style.borderColor = "#e0e0e0";
         });
       }
 
-      // Fade away progress bar initially
+      // Reset progress bar to default state
       const progressBar = utils.qa(
         '[if-element="progress-bar"]',
         document.body
       );
       if (progressBar.length) {
         progressBar.forEach((bar) => {
-          bar.style.transition =
-            "width 2000ms ease-out, opacity 2000ms ease-out";
+          // Completely reset to default state
+          bar.style.transition = "all 2000ms ease-out";
           bar.style.setProperty("width", "14.28%"); // 1/7 steps = 14.28%
-          bar.style.opacity = "0.7"; // Slightly faded
+          bar.style.opacity = "1";
+          bar.style.background = "#e0e0e0"; // Very light grey
         });
       }
+
+      // Reset any custom progress styling to default
+      this.resetProgressToDefault();
     }, 500); // Start after 500ms delay
+  }
+
+  resetProgressToDefault() {
+    // Reset any additional progress elements to default state
+    const allProgressElements = utils.qa(
+      '[class*="progress"], [class*="step"], [if-element*="progress"]',
+      document.body
+    );
+
+    allProgressElements.forEach((element) => {
+      // Skip elements we've already handled
+      if (
+        element.hasAttribute("if-element") &&
+        element.getAttribute("if-element").includes("progress-step")
+      ) {
+        return;
+      }
+
+      // Reset any progress-related elements to default
+      if (
+        element.classList.contains("active") ||
+        element.classList.contains("completed") ||
+        element.classList.contains("is-active") ||
+        element.classList.contains("is-completed")
+      ) {
+        element.style.transition = "all 2000ms ease-out";
+        element.style.opacity = "0.3";
+        element.style.backgroundColor = "#e0e0e0";
+        element.style.borderColor = "#e0e0e0";
+        element.style.color = "#999";
+      }
+    });
   }
 
   async nextStep() {
