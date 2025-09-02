@@ -71,6 +71,7 @@ class OptimizedFormHandler {
     this.stepHistory = [];
     this.variables = new Map();
     this.conditionalStyles = [];
+    this.isStartingQuiz = false; // Flag to track if we're in start process
 
     // Initialize
     this.init();
@@ -136,67 +137,70 @@ class OptimizedFormHandler {
   }
 
   bindStepNavigation() {
-    // Next step buttons
-    utils.qa('[if-element="button-next"]', this.form).forEach((btn) => {
-      // Skip buttons that are start buttons
-      const buttonText = btn.textContent.trim().toLowerCase();
-      if (
-        buttonText.includes("Start the quiz") ||
-        buttonText.includes("Start quiz")
-      ) {
-        console.log(
-          "Skipping start button in next button binding:",
-          buttonText
-        );
-        return;
-      }
-
+    // Next step buttons - target specific quiz_next class
+    utils.qa(".quiz_next", this.form).forEach((btn) => {
+      console.log(
+        "Binding next step to quiz_next button:",
+        btn.textContent.trim()
+      );
       utils.addEvent(btn, "click", (e) => {
+        console.log("Quiz next button clicked");
         e.preventDefault();
         this.nextStep();
       });
     });
 
-    // Previous step buttons
-    utils.qa('[if-element="button-back"]', this.form).forEach((btn) => {
+    // Previous step buttons - target specific quiz_back class
+    utils.qa(".quiz_back", this.form).forEach((btn) => {
+      console.log(
+        "Binding previous step to quiz_back button:",
+        btn.textContent.trim()
+      );
       utils.addEvent(btn, "click", (e) => {
+        console.log("Quiz back button clicked");
         e.preventDefault();
         this.previousStep();
       });
     });
 
-    // Reset buttons
+    // Reset buttons - keep existing attribute-based approach or add specific class if needed
     utils.qa('[if-element="button-reset"]', this.form).forEach((btn) => {
+      console.log(
+        "Binding reset functionality to button:",
+        btn.textContent.trim()
+      );
       utils.addEvent(btn, "click", (e) => {
+        console.log("Reset button clicked");
         e.preventDefault();
         this.resetForm();
       });
     });
 
-    // Start quiz button - activate first progress node
-    // Find the start button by checking text content (more specific)
-    const allButtons = utils.qa("button", this.form);
-    const startButton = allButtons.find((btn) => {
-      const buttonText = btn.textContent.trim().toLowerCase();
-      // Only match buttons that are clearly start buttons, not next buttons
-      return (
-        (buttonText.includes("start the quiz") ||
-          buttonText.includes("start quiz")) &&
-        !buttonText.includes("next") &&
-        !buttonText.includes("continue")
-      );
+    // Start quiz button - target specific start_the_quiz class
+    const startButtons = utils.qa(".start_the_quiz", this.form);
+    console.log("Start buttons found:", startButtons.length);
+
+    startButtons.forEach((btn, index) => {
+      console.log(`Start button ${index}: "${btn.textContent.trim()}"`);
     });
 
-    if (startButton) {
-      console.log("Found start button:", startButton.textContent.trim());
-      utils.addEvent(startButton, "click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("Start button clicked, calling activateFirstProgressNode");
-        this.activateFirstProgressNode();
+    if (startButtons.length > 0) {
+      startButtons.forEach((btn) => {
+        console.log(
+          "Binding start functionality to start_the_quiz button:",
+          btn.textContent.trim()
+        );
+        utils.addEvent(btn, "click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log(
+            "Start the quiz button clicked, calling activateFirstProgressNode"
+          );
+          this.activateFirstProgressNode();
+        });
       });
     } else {
-      console.log("No start button found");
+      console.log("No start_the_quiz buttons found");
     }
   }
 
@@ -256,7 +260,8 @@ class OptimizedFormHandler {
 
     // Ensure currentStep is set to 0 when starting the quiz
     this.currentStep = 0;
-    console.log("Set currentStep to 0");
+    this.isStartingQuiz = true; // Set flag to prevent next step interference
+    console.log("Set currentStep to 0 and isStartingQuiz to true");
   }
 
   updateProgressClasses() {
@@ -601,6 +606,12 @@ class OptimizedFormHandler {
   async nextStep() {
     console.log("nextStep called with currentStep:", this.currentStep);
 
+    // Prevent nextStep from running when we're starting the quiz
+    if (this.isStartingQuiz) {
+      console.log("nextStep blocked - quiz is starting");
+      return;
+    }
+
     if (!this.steps || this.currentStep >= this.totalSteps - 1) return;
 
     // Validate current step
@@ -612,6 +623,7 @@ class OptimizedFormHandler {
       await this.transitionToStep(currentStep, nextStep, "next");
 
       this.currentStep++;
+      this.isStartingQuiz = false; // Reset flag - user is now moving between steps
       console.log("nextStep: currentStep incremented to:", this.currentStep);
 
       this.updateProgress();
