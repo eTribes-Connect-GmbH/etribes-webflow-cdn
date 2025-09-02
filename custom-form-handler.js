@@ -354,77 +354,120 @@ class OptimizedFormHandler {
     );
 
     progressSteps.forEach((step, index) => {
-      console.log(
-        `Processing step ${index}: currentStep=${this.currentStep}, index=${index}`
+      // Get the logical step index from the mapping
+      const logicalStepIndex = Object.keys(this.stepMapping).find(
+        (key) => this.stepMapping[key] === index
       );
 
-      if (index < this.currentStep) {
-        // Completed steps - add is-completed to outer div and all children
-        console.log(`Step ${index}: Setting as completed`);
-        step.classList.remove("is-active");
-        step.classList.add("is-completed");
+      console.log(
+        `Processing HTML step ${index} -> logical step ${logicalStepIndex}: currentStep=${this.currentStep}`
+      );
 
-        const progressGraphic = step.querySelector(".quiz_progress-graphic");
-        const progressPoint = step.querySelector(".quiz_progress-point");
-        const progressLine = step.querySelector(".quiz_progress-line");
-        const progressLineFill = step.querySelector(".quiz_progress-line-fill");
-        const progressName = step.querySelector(".quiz_progress-name");
+      if (logicalStepIndex !== undefined) {
+        const logicalIndex = parseInt(logicalStepIndex);
 
-        if (progressGraphic) {
-          progressGraphic.classList.remove("is-active");
-          progressGraphic.classList.add("is-completed");
-        }
-        if (progressPoint) {
-          progressPoint.classList.remove("is-active");
-          progressPoint.classList.add("is-completed");
-        }
-        if (progressLine) {
-          progressLine.classList.remove("is-active");
-          progressLine.classList.add("is-completed");
-        }
-        if (progressLineFill) {
-          progressLineFill.classList.remove("is-active");
-          progressLineFill.classList.add("is-completed");
-        }
-        if (progressName) {
-          progressName.classList.remove("is-active");
-          progressName.classList.add("is-completed");
-        }
-      } else if (index === this.currentStep) {
-        // Current active step - add is-active to outer div and all children
-        console.log(`Step ${index}: Setting as active`);
-        step.classList.remove("is-completed");
-        step.classList.add("is-active");
+        if (logicalIndex < this.currentStep) {
+          // Completed steps - add is-completed to outer div and all children
+          console.log(`Logical step ${logicalIndex}: Setting as completed`);
+          step.classList.remove("is-active");
+          step.classList.add("is-completed");
 
-        const progressGraphic = step.querySelector(".quiz_progress-graphic");
-        const progressPoint = step.querySelector(".quiz_progress-point");
-        const progressLine = step.querySelector(".quiz_progress-line");
-        const progressLineFill = step.querySelector(".quiz_progress-line-fill");
-        const progressName = step.querySelector(".quiz_progress-name");
+          const progressGraphic = step.querySelector(".quiz_progress-graphic");
+          const progressPoint = step.querySelector(".quiz_progress-point");
+          const progressLine = step.querySelector(".quiz_progress-line");
+          const progressLineFill = step.querySelector(
+            ".quiz_progress-line-fill"
+          );
+          const progressName = step.querySelector(".quiz_progress-name");
 
-        if (progressGraphic) {
-          progressGraphic.classList.remove("is-completed");
-          progressGraphic.classList.add("is-active");
-        }
-        if (progressPoint) {
-          progressPoint.classList.remove("is-completed");
-          progressPoint.classList.add("is-active");
-        }
-        if (progressLine) {
-          progressLine.classList.remove("is-completed");
-          progressLine.classList.add("is-active");
-        }
-        if (progressLineFill) {
-          progressLineFill.classList.remove("is-completed");
-          progressLineFill.classList.add("is-active");
-        }
-        if (progressName) {
-          progressName.classList.remove("is-completed");
-          progressName.classList.add("is-active");
+          if (progressGraphic) {
+            progressGraphic.classList.remove("is-active");
+            progressGraphic.classList.add("is-completed");
+          }
+          if (progressPoint) {
+            progressPoint.classList.remove("is-active");
+            progressPoint.classList.add("is-completed");
+          }
+          if (progressLine) {
+            progressLine.classList.remove("is-active");
+            progressLine.classList.add("is-completed");
+          }
+          if (progressLineFill) {
+            progressLineFill.classList.remove("is-active");
+            progressLineFill.classList.add("is-completed");
+          }
+          if (progressName) {
+            progressName.classList.remove("is-active");
+            progressName.classList.add("is-completed");
+          }
+        } else if (logicalIndex === this.currentStep) {
+          // Current active step - add is-active to outer div and all children
+          console.log(`Logical step ${logicalIndex}: Setting as active`);
+          step.classList.remove("is-completed");
+          step.classList.add("is-active");
+
+          const progressGraphic = step.querySelector(".quiz_progress-graphic");
+          const progressPoint = step.querySelector(".quiz_progress-point");
+          const progressLine = step.querySelector(".quiz_progress-line");
+          const progressLineFill = step.querySelector(
+            ".quiz_progress-line-fill"
+          );
+          const progressName = step.querySelector(".quiz_progress-name");
+
+          if (progressGraphic) {
+            progressGraphic.classList.remove("is-completed");
+            progressGraphic.classList.add("is-active");
+          }
+          if (progressPoint) {
+            progressPoint.classList.remove("is-completed");
+            progressPoint.classList.add("is-active");
+          }
+          if (progressLine) {
+            progressLine.classList.remove("is-completed");
+            progressLine.classList.add("is-active");
+          }
+          if (progressLineFill) {
+            progressLineFill.classList.remove("is-completed");
+            progressLineFill.classList.add("is-active");
+          }
+          if (progressName) {
+            progressName.classList.remove("is-completed");
+            progressName.classList.add("is-active");
+          }
+        } else {
+          // Future steps - remove all classes
+          console.log(
+            `Logical step ${logicalIndex}: Removing all classes (future step)`
+          );
+          step.classList.remove("is-active", "is-completed");
+
+          const progressGraphic = step.querySelector(".quiz_progress-graphic");
+          const progressPoint = step.querySelector(".quiz_progress-point");
+          const progressLine = step.querySelector(".quiz_progress-line");
+          const progressLineFill = step.querySelector(
+            ".quiz_progress-line-fill"
+          );
+          const progressName = step.querySelector(".quiz_progress-name");
+
+          if (progressGraphic) {
+            progressGraphic.classList.remove("is-active", "is-completed");
+          }
+          if (progressPoint) {
+            progressPoint.classList.remove("is-active", "is-completed");
+          }
+          if (progressLine) {
+            progressLine.classList.remove("is-active", "is-completed");
+          }
+          if (progressLineFill) {
+            progressLineFill.classList.remove("is-active", "is-completed");
+          }
+          if (progressName) {
+            progressName.classList.remove("is-active", "is-completed");
+          }
         }
       } else {
-        // Future steps - remove all classes
-        console.log(`Step ${index}: Removing all classes (future step)`);
+        // This step is not in our mapping (likely the landing page)
+        console.log(`HTML step ${index}: Not in mapping, removing all classes`);
         step.classList.remove("is-active", "is-completed");
 
         const progressGraphic = step.querySelector(".quiz_progress-graphic");
@@ -433,16 +476,21 @@ class OptimizedFormHandler {
         const progressLineFill = step.querySelector(".quiz_progress-line-fill");
         const progressName = step.querySelector(".quiz_progress-name");
 
-        if (progressGraphic)
+        if (progressGraphic) {
           progressGraphic.classList.remove("is-active", "is-completed");
-        if (progressPoint)
+        }
+        if (progressPoint) {
           progressPoint.classList.remove("is-active", "is-completed");
-        if (progressLine)
+        }
+        if (progressLine) {
           progressLine.classList.remove("is-active", "is-completed");
-        if (progressLineFill)
+        }
+        if (progressLineFill) {
           progressLineFill.classList.remove("is-active", "is-completed");
-        if (progressName)
+        }
+        if (progressName) {
           progressName.classList.remove("is-active", "is-completed");
+        }
       }
     });
   }
