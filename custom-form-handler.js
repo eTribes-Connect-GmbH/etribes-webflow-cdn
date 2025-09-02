@@ -141,8 +141,8 @@ class OptimizedFormHandler {
       // Skip buttons that are start buttons
       const buttonText = btn.textContent.trim().toLowerCase();
       if (
-        buttonText.includes("start the quiz") ||
-        buttonText.includes("start quiz")
+        buttonText.includes("Start the quiz") ||
+        buttonText.includes("Start quiz")
       ) {
         console.log(
           "Skipping start button in next button binding:",
