@@ -275,8 +275,24 @@ class OptimizedFormHandler {
       this.steps[0].classList.add("is-active");
       this.steps[0].setAttribute("data-if-active", "true");
 
+      // Force the step to be visible and check computed styles
+      this.steps[0].style.visibility = "visible";
+      this.steps[0].style.opacity = "1";
+
       console.log("First step display after:", this.steps[0].style.display);
       console.log("First step classes after:", this.steps[0].className);
+      console.log(
+        "First step computed display:",
+        window.getComputedStyle(this.steps[0]).display
+      );
+      console.log(
+        "First step computed visibility:",
+        window.getComputedStyle(this.steps[0]).visibility
+      );
+      console.log(
+        "First step computed opacity:",
+        window.getComputedStyle(this.steps[0]).opacity
+      );
     } else {
       console.log("No steps found or steps[0] is undefined");
     }
