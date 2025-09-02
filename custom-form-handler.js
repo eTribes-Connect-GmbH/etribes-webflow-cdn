@@ -187,20 +187,25 @@ class OptimizedFormHandler {
   }
 
   activateFirstProgressNode() {
+    console.log("activateFirstProgressNode called");
+
     // Find the first progress step and activate it completely
     const firstProgressStep = utils.qa(
       '[if-element="progress-step"]',
       document.body
     )[0];
     if (firstProgressStep) {
+      console.log("Found first progress step, removing existing classes");
+
       // Remove any existing active classes from all progress steps
       utils
         .qa('[if-element="progress-step"]', document.body)
         .forEach((step) => {
-          step.classList.remove("is-active");
+          step.classList.remove("is-active", "is-completed");
         });
 
       // Add is-active to the first progress step (parent div)
+      console.log("Adding is-active to first progress step");
       firstProgressStep.classList.add("is-active");
 
       // Find and activate all child elements
@@ -234,6 +239,10 @@ class OptimizedFormHandler {
       this.steps[0].classList.add("is-active");
       this.steps[0].setAttribute("data-if-active", "true");
     }
+
+    // Ensure currentStep is set to 0 when starting the quiz
+    this.currentStep = 0;
+    console.log("Set currentStep to 0");
   }
 
   updateProgressClasses() {
@@ -243,9 +252,20 @@ class OptimizedFormHandler {
       document.body
     );
 
+    // Debug: log current step
+    console.log(
+      "updateProgressClasses called with currentStep:",
+      this.currentStep
+    );
+
     progressSteps.forEach((step, index) => {
+      console.log(
+        `Processing step ${index}: currentStep=${this.currentStep}, index=${index}`
+      );
+
       if (index < this.currentStep) {
         // Completed steps - add is-completed to outer div and all children
+        console.log(`Step ${index}: Setting as completed`);
         step.classList.remove("is-active");
         step.classList.add("is-completed");
 
@@ -277,6 +297,7 @@ class OptimizedFormHandler {
         }
       } else if (index === this.currentStep) {
         // Current active step - add is-active to outer div and all children
+        console.log(`Step ${index}: Setting as active`);
         step.classList.remove("is-completed");
         step.classList.add("is-active");
 
@@ -308,6 +329,7 @@ class OptimizedFormHandler {
         }
       } else {
         // Future steps - remove all classes
+        console.log(`Step ${index}: Removing all classes (future step)`);
         step.classList.remove("is-active", "is-completed");
 
         const progressGraphic = step.querySelector(".quiz_progress-graphic");
