@@ -164,6 +164,107 @@ class OptimizedFormHandler {
         this.resetForm();
       });
     });
+
+    // Start quiz button - activate first progress node
+    utils
+      .qa(
+        '[if-element="button-start"], .start-quiz-btn, button:contains("Start the quiz")',
+        this.form
+      )
+      .forEach((btn) => {
+        utils.addEvent(btn, "click", (e) => {
+          this.activateFirstProgressNode();
+        });
+      });
+  }
+
+  activateFirstProgressNode() {
+    // Find the first progress graphic and activate it
+    const firstProgressGraphic = utils.qa(
+      ".quiz_progress-graphic",
+      document.body
+    )[0];
+    if (firstProgressGraphic) {
+      // Remove any existing active classes
+      utils.qa(".quiz_progress-graphic", document.body).forEach((graphic) => {
+        graphic.classList.remove("is-active");
+      });
+
+      // Add is-active to first progress graphic and its children
+      firstProgressGraphic.classList.add("is-active");
+      const progressPoint = firstProgressGraphic.querySelector(
+        ".quiz_progress-point"
+      );
+      const progressLine = firstProgressGraphic.querySelector(
+        ".quiz_progress-line"
+      );
+      const progressLineFill = firstProgressGraphic.querySelector(
+        ".quiz_progress-line-fill"
+      );
+
+      if (progressPoint) progressPoint.classList.add("is-active");
+      if (progressLine) progressLine.classList.add("is-active");
+      if (progressLineFill) progressLineFill.classList.add("is-active");
+    }
+  }
+
+  updateProgressClasses() {
+    // Update progress classes based on current step
+    const progressGraphics = utils.qa(".quiz_progress-graphic", document.body);
+
+    progressGraphics.forEach((graphic, index) => {
+      if (index < this.currentStep) {
+        // Completed steps
+        graphic.classList.remove("is-active");
+        graphic.classList.add("is-completed");
+
+        const progressPoint = graphic.querySelector(".quiz_progress-point");
+        const progressLine = graphic.querySelector(".quiz_progress-line");
+        const progressLineFill = graphic.querySelector(
+          ".quiz_progress-line-fill"
+        );
+
+        if (progressPoint)
+          progressPoint.classList.replace("is-active", "is-completed");
+        if (progressLine)
+          progressLine.classList.replace("is-active", "is-completed");
+        if (progressLineFill)
+          progressLineFill.classList.replace("is-active", "is-completed");
+      } else if (index === this.currentStep) {
+        // Current active step
+        graphic.classList.remove("is-completed");
+        graphic.classList.add("is-active");
+
+        const progressPoint = graphic.querySelector(".quiz_progress-point");
+        const progressLine = graphic.querySelector(".quiz_progress-line");
+        const progressLineFill = graphic.querySelector(
+          ".quiz_progress-line-fill"
+        );
+
+        if (progressPoint)
+          progressPoint.classList.replace("is-completed", "is-active");
+        if (progressLine)
+          progressLine.classList.replace("is-active", "is-active");
+        if (progressLineFill)
+          progressLineFill.classList.replace("is-completed", "is-active");
+      } else {
+        // Future steps
+        graphic.classList.remove("is-active", "is-completed");
+
+        const progressPoint = graphic.querySelector(".quiz_progress-point");
+        const progressLine = graphic.querySelector(".quiz_progress-line");
+        const progressLineFill = graphic.querySelector(
+          ".quiz_progress-line-fill"
+        );
+
+        if (progressPoint)
+          progressPoint.classList.remove("is-active", "is-completed");
+        if (progressLine)
+          progressLine.classList.remove("is-active", "is-completed");
+        if (progressLineFill)
+          progressLineFill.classList.remove("is-active", "is-completed");
+      }
+    });
   }
 
   bindValidationEvents() {
@@ -229,61 +330,17 @@ class OptimizedFormHandler {
   }
 
   initializeProgressSteps() {
-    // Initialize existing progress steps to START with steps 1-4 active (like top image)
-    // Since HTML already has active classes, we just need to style them properly
+    // Just initialize the step structure - let CSS handle the styling
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
     );
     if (progressSteps.length) {
-      progressSteps.forEach((step, index) => {
-        // Set transition for smooth animations
-        step.style.transition = "opacity 200ms ease-out";
-
-        if (index <= 3) {
-          // Steps 1-4: Start as active (dark red) - like top image
-          step.classList.add("is-active");
-          step.classList.add("is-completed");
-          step.style.opacity = "1";
-          step.style.backgroundColor = "#8B0000"; // Dark red
-          step.style.borderColor = "#8B0000";
-          step.style.color = "white";
-          step.style.borderWidth = "2px";
-          step.style.borderStyle = "solid";
-        } else {
-          // Steps 5-7: Start as inactive (light grey) - like top image
-          step.classList.remove("is-active", "is-completed");
-          step.style.opacity = "0.7";
-          step.style.backgroundColor = "transparent";
-          step.style.borderColor = "#d0d0d0";
-          step.style.color = "#999";
-          step.style.borderWidth = "2px";
-          step.style.borderStyle = "solid";
-        }
+      // Remove any existing active classes - start fresh
+      progressSteps.forEach((step) => {
+        step.classList.remove("is-active", "is-completed");
       });
     }
-
-    // Initialize progress bar to start with 4/7 steps filled (like top image)
-    const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
-    if (progressBar.length) {
-      const initialProgress = 4 / this.totalSteps; // 4 out of 7 steps
-      progressBar.forEach((bar) => {
-        bar.style.transition = "width 300ms ease-out";
-        bar.style.setProperty("width", `${initialProgress * 100}%`);
-        bar.style.background = "#8B0000"; // Dark red
-        bar.style.height = "4px";
-        bar.style.borderRadius = "2px";
-      });
-    }
-
-    // Initialize progress line fill to start with 4/7 steps filled
-    this.initializeProgressLineFill();
-
-    // Initialize progress line connections to start with dark red for first 4 steps
-    this.initializeProgressLines();
-
-    // Start the fade-away animation to reset to inactive state (like bottom image)
-    this.startInitialFadeAway();
   }
 
   updateProgress() {
@@ -345,52 +402,6 @@ class OptimizedFormHandler {
           fill.classList.add("is-completed");
         } else {
           fill.classList.remove("is-completed");
-        }
-      });
-    }
-  }
-
-  initializeProgressLineFill() {
-    // Initialize progress line fill to start with 4/7 steps filled (like top image)
-    const progressLineFill = utils.qa(
-      ".quiz_progress-line-fill",
-      document.body
-    );
-    if (progressLineFill.length) {
-      progressLineFill.forEach((fill) => {
-        fill.style.transition = "width 300ms ease-out";
-        fill.style.setProperty("width", "57.14%"); // 4/7 steps = 57.14%
-        fill.style.background = "#8B0000"; // Dark red
-        fill.style.height = "4px";
-        fill.style.borderRadius = "2px";
-        fill.classList.add("is-completed");
-      });
-    }
-  }
-
-  initializeProgressLines() {
-    // Initialize progress line connections to start with dark red for first 4 steps (like top image)
-    const progressLines = utils.qa(
-      ".progress-line, .progress-connection, [if-element='progress-line'], .quiz_progress-line",
-      document.body
-    );
-
-    if (progressLines.length) {
-      progressLines.forEach((line, index) => {
-        if (index < 4) {
-          // First 4 lines: dark red (active)
-          line.style.transition = "all 2000ms ease-out";
-          line.style.backgroundColor = "#8B0000"; // Dark red
-          line.style.borderColor = "#8B0000";
-          line.style.opacity = "1";
-          line.style.height = "2px";
-        } else {
-          // Lines 5-7: light grey (inactive)
-          line.style.transition = "all 2000ms ease-out";
-          line.style.backgroundColor = "#d0d0d0"; // Light grey
-          line.style.borderColor = "#d0d0d0";
-          line.style.opacity = "0.6";
-          line.style.height = "2px";
         }
       });
     }
@@ -507,6 +518,7 @@ class OptimizedFormHandler {
       this.currentStep++;
       this.updateProgress();
       this.updateStepStates();
+      this.updateProgressClasses();
       this.scrollToTop();
 
       // Dispatch step change event
