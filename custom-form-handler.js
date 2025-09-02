@@ -385,13 +385,50 @@ class OptimizedFormHandler {
 
     // Start the fade-away animation immediately on page load
     this.startInitialFadeAway();
+
+    // Force a complete reset of all progress elements
+    this.forceResetAllProgress();
+
+    // Add a small delay to ensure DOM is fully ready, then reset again
+    setTimeout(() => {
+      this.forceResetAllProgress();
+    }, 100);
+  }
+
+  forceResetAllProgress() {
+    // Force reset all progress-related elements to ensure clean state
+    const progressSelectors = [
+      '[if-element="progress-step"]',
+      ".quiz_progress-step",
+      ".quiz_progress-graphic",
+      ".quiz_progress-point",
+      ".quiz_progress-line",
+      ".quiz_progress-line-fill",
+      ".quiz_progress-name",
+      '[if-element="progress-bar"]',
+    ];
+
+    progressSelectors.forEach((selector) => {
+      const elements = utils.qa(selector, document.body);
+      elements.forEach((element) => {
+        element.classList.remove("is-active", "is-completed");
+      });
+    });
+
+    // Also use a more aggressive approach - remove from ALL elements with these classes
+    const allActiveElements = document.querySelectorAll(
+      ".is-active, .is-completed"
+    );
+    allActiveElements.forEach((element) => {
+      element.classList.remove("is-active", "is-completed");
+    });
   }
 
   removeAllCompletedClasses() {
-    // Simple approach: remove is-active from every div we find
-    const allDivs = utils.qa("div", document.body);
-    allDivs.forEach((div) => {
-      div.classList.remove("is-active", "is-completed");
+    // Aggressive approach: remove is-active and is-completed from every element on the page
+    const allElements = document.querySelectorAll("*");
+    allElements.forEach((element) => {
+      element.classList.remove("is-active", "is-completed");
     });
   }
 
@@ -464,10 +501,10 @@ class OptimizedFormHandler {
   }
 
   startInitialFadeAway() {
-    // Simple approach: remove is-completed from every div we find
-    const allDivs = utils.qa("div", document.body);
-    allDivs.forEach((div) => {
-      div.classList.remove("is-completed");
+    // Aggressive approach: remove is-completed from every element on the page
+    const allElements = document.querySelectorAll("*");
+    allElements.forEach((element) => {
+      element.classList.remove("is-completed");
     });
   }
 
