@@ -107,15 +107,9 @@ class OptimizedFormHandler {
 
   initializeStepStates(steps) {
     steps.forEach((step, index) => {
-      if (index === 0) {
-        step.style.display = "block";
-        step.classList.add("is-active");
-        step.setAttribute("data-if-active", "true");
-      } else {
-        step.style.display = "none";
-        step.classList.remove("is-active");
-        step.removeAttribute("data-if-active");
-      }
+      step.style.display = "none";
+      step.classList.remove("is-active");
+      step.removeAttribute("data-if-active");
     });
   }
 
