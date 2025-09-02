@@ -138,6 +138,19 @@ class OptimizedFormHandler {
   bindStepNavigation() {
     // Next step buttons
     utils.qa('[if-element="button-next"]', this.form).forEach((btn) => {
+      // Skip buttons that are start buttons
+      const buttonText = btn.textContent.trim().toLowerCase();
+      if (
+        buttonText.includes("start the quiz") ||
+        buttonText.includes("start quiz")
+      ) {
+        console.log(
+          "Skipping start button in next button binding:",
+          buttonText
+        );
+        return;
+      }
+
       utils.addEvent(btn, "click", (e) => {
         e.preventDefault();
         this.nextStep();
@@ -161,28 +174,29 @@ class OptimizedFormHandler {
     });
 
     // Start quiz button - activate first progress node
-    // Try multiple selector strategies for the start button
-    const startButtonSelectors = [
-      '[if-element="button-start"]',
-      ".start-quiz-btn",
-      "button[data-start-quiz]",
-      'button:has-text("Start the quiz")',
-      "button",
-    ];
-
-    // Find the start button by checking text content
+    // Find the start button by checking text content (more specific)
     const allButtons = utils.qa("button", this.form);
-    const startButton = allButtons.find(
-      (btn) =>
-        btn.textContent.trim().toLowerCase().includes("start the quiz") ||
-        btn.textContent.trim().toLowerCase().includes("start quiz") ||
-        btn.textContent.trim().toLowerCase().includes("start")
-    );
+    const startButton = allButtons.find((btn) => {
+      const buttonText = btn.textContent.trim().toLowerCase();
+      // Only match buttons that are clearly start buttons, not next buttons
+      return (
+        (buttonText.includes("start the quiz") ||
+          buttonText.includes("start quiz")) &&
+        !buttonText.includes("next") &&
+        !buttonText.includes("continue")
+      );
+    });
 
     if (startButton) {
+      console.log("Found start button:", startButton.textContent.trim());
       utils.addEvent(startButton, "click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Start button clicked, calling activateFirstProgressNode");
         this.activateFirstProgressNode();
       });
+    } else {
+      console.log("No start button found");
     }
   }
 
@@ -585,6 +599,8 @@ class OptimizedFormHandler {
   }
 
   async nextStep() {
+    console.log("nextStep called with currentStep:", this.currentStep);
+
     if (!this.steps || this.currentStep >= this.totalSteps - 1) return;
 
     // Validate current step
@@ -596,6 +612,8 @@ class OptimizedFormHandler {
       await this.transitionToStep(currentStep, nextStep, "next");
 
       this.currentStep++;
+      console.log("nextStep: currentStep incremented to:", this.currentStep);
+
       this.updateProgress();
       this.updateStepStates();
       this.updateProgressClasses();
