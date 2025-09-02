@@ -98,11 +98,11 @@ class OptimizedFormHandler {
     this.form.setAttribute("data-region", this.config.region);
 
     // Count steps
-    const steps = utils.qa("[if-step]", this.form);
-    this.totalSteps = steps.length;
+    this.steps = utils.qa("[if-step]", this.form);
+    this.totalSteps = this.steps.length;
 
     // Initialize step states
-    this.initializeStepStates(steps);
+    this.initializeStepStates(this.steps);
   }
 
   initializeStepStates(steps) {
@@ -166,16 +166,29 @@ class OptimizedFormHandler {
     });
 
     // Start quiz button - activate first progress node
-    utils
-      .qa(
-        '[if-element="button-start"], .start-quiz-btn, button:contains("Start the quiz")',
-        this.form
-      )
-      .forEach((btn) => {
-        utils.addEvent(btn, "click", (e) => {
-          this.activateFirstProgressNode();
-        });
+    // Try multiple selector strategies for the start button
+    const startButtonSelectors = [
+      '[if-element="button-start"]',
+      ".start-quiz-btn",
+      "button[data-start-quiz]",
+      'button:has-text("Start the quiz")',
+      "button",
+    ];
+
+    // Find the start button by checking text content
+    const allButtons = utils.qa("button", this.form);
+    const startButton = allButtons.find(
+      (btn) =>
+        btn.textContent.trim().toLowerCase().includes("start the quiz") ||
+        btn.textContent.trim().toLowerCase().includes("start quiz") ||
+        btn.textContent.trim().toLowerCase().includes("start")
+    );
+
+    if (startButton) {
+      utils.addEvent(startButton, "click", (e) => {
+        this.activateFirstProgressNode();
       });
+    }
   }
 
   activateFirstProgressNode() {
@@ -505,7 +518,7 @@ class OptimizedFormHandler {
   }
 
   async nextStep() {
-    if (this.currentStep >= this.totalSteps - 1) return;
+    if (!this.steps || this.currentStep >= this.totalSteps - 1) return;
 
     // Validate current step
     if (this.validateCurrentStep()) {
@@ -528,12 +541,14 @@ class OptimizedFormHandler {
       this.showStepValidationError();
 
       // Shake the current step to indicate error
-      this.shakeStep(this.steps[this.currentStep]);
+      if (this.steps && this.steps[this.currentStep]) {
+        this.shakeStep(this.steps[this.currentStep]);
+      }
     }
   }
 
   async previousStep() {
-    if (this.currentStep <= 0) return;
+    if (!this.steps || this.currentStep <= 0) return;
 
     const currentStep = this.steps[this.currentStep];
     const prevStep = this.steps[this.currentStep - 1];
@@ -579,6 +594,8 @@ class OptimizedFormHandler {
 
   updateStepStates() {
     // Update step state management
+    if (!this.steps) return;
+
     this.steps.forEach((step, index) => {
       if (index === this.currentStep) {
         step.classList.add("is-active");
@@ -591,8 +608,8 @@ class OptimizedFormHandler {
   }
 
   validateCurrentStep() {
+    if (!this.steps || !this.steps[this.currentStep]) return true;
     const currentStepElement = this.steps[this.currentStep];
-    if (!currentStepElement) return true;
 
     // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
