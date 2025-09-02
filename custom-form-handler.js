@@ -107,6 +107,7 @@ class OptimizedFormHandler {
 
   initializeStepStates(steps) {
     steps.forEach((step, index) => {
+      // Hide all steps initially, only show first step when user starts
       step.style.display = "none";
       step.classList.remove("is-active");
       step.removeAttribute("data-if-active");
@@ -212,6 +213,13 @@ class OptimizedFormHandler {
       if (progressPoint) progressPoint.classList.add("is-active");
       if (progressLine) progressLine.classList.add("is-active");
       if (progressLineFill) progressLineFill.classList.add("is-active");
+    }
+
+    // Also show the first step when user starts the quiz
+    if (this.steps && this.steps[0]) {
+      this.steps[0].style.display = "block";
+      this.steps[0].classList.add("is-active");
+      this.steps[0].setAttribute("data-if-active", "true");
     }
   }
 
@@ -343,6 +351,24 @@ class OptimizedFormHandler {
         step.classList.remove("is-active", "is-completed");
       });
     }
+
+    // Also remove all completed classes from progress elements on load
+    this.removeAllCompletedClasses();
+
+    // Start the fade-away animation immediately on page load
+    this.startInitialFadeAway();
+  }
+
+  removeAllCompletedClasses() {
+    // Remove all completed classes from all progress elements on page load
+    const allProgressElements = utils.qa(
+      '.quiz_progress-graphic, .quiz_progress-point, .quiz_progress-line, .quiz_progress-line-fill, [if-element="progress-step"], [if-element="progress-bar"]',
+      document.body
+    );
+
+    allProgressElements.forEach((element) => {
+      element.classList.remove("is-active", "is-completed");
+    });
   }
 
   updateProgress() {
@@ -414,38 +440,30 @@ class OptimizedFormHandler {
   }
 
   startInitialFadeAway() {
-    // Gradually remove is-completed classes from progress elements
-    setTimeout(() => {
-      // Remove is-completed class from all progress points at the same time
-      const progressPoints = utils.qa(
-        ".quiz_progress-point.is-completed",
-        document.body
-      );
-      progressPoints.forEach((point, index) => {
-        if (index > 0) {
-          // Skip first point, remove from others at the same time
-          point.classList.remove("is-completed");
-        }
-      });
+    // Remove is-completed classes from all progress elements immediately on page load
+    // Remove is-completed class from all progress points at the same time
+    const progressPoints = utils.qa(
+      ".quiz_progress-point.is-completed",
+      document.body
+    );
+    progressPoints.forEach((point) => {
+      point.classList.remove("is-completed");
+    });
 
-      // Remove is-completed class from progress line fills at the same time
-      const progressLineFills = utils.qa(
-        ".quiz_progress-line-fill.is-completed",
-        document.body
-      );
-      progressLineFills.forEach((fill) => {
-        fill.classList.remove("is-completed");
-      });
+    // Remove is-completed class from progress line fills at the same time
+    const progressLineFills = utils.qa(
+      ".quiz_progress-line-fill.is-completed",
+      document.body
+    );
+    progressLineFills.forEach((fill) => {
+      fill.classList.remove("is-completed");
+    });
 
-      // Also handle any other elements with is-completed class at the same time
-      const allCompletedElements = utils.qa(".is-completed", document.body);
-      allCompletedElements.forEach((element, index) => {
-        if (index > 0) {
-          // Skip first element, remove from others at the same time
-          element.classList.remove("is-completed");
-        }
-      });
-    }, 500); // Start after 500ms delay
+    // Also handle any other elements with is-completed class at the same time
+    const allCompletedElements = utils.qa(".is-completed", document.body);
+    allCompletedElements.forEach((element) => {
+      element.classList.remove("is-completed");
+    });
   }
 
   resetProgressToDefault() {
