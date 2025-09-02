@@ -117,10 +117,19 @@ class OptimizedFormHandler {
       console.log(`Step ${index}:`, step);
       console.log(`Step ${index} display before:`, step.style.display);
 
-      // Hide all steps initially, only show first step when user starts
-      step.style.display = "none";
-      step.classList.remove("is-active");
-      step.removeAttribute("data-if-active");
+      if (index === 0) {
+        // First step (landing page) - show by default
+        step.style.display = "block";
+        step.classList.add("is-active");
+        step.setAttribute("data-if-active", "true");
+        console.log(`Step ${index} (landing page): shown by default`);
+      } else {
+        // All other steps - hide initially
+        step.style.display = "none";
+        step.classList.remove("is-active");
+        step.removeAttribute("data-if-active");
+        console.log(`Step ${index}: hidden initially`);
+      }
 
       console.log(`Step ${index} display after:`, step.style.display);
     });
@@ -262,39 +271,48 @@ class OptimizedFormHandler {
       if (progressName) progressName.classList.add("is-active");
     }
 
-    // Also show the first step when user starts the quiz
+    // Show the second step when user starts the quiz (first step is already visible on landing page)
     console.log("Checking steps array:", this.steps);
     console.log("Steps length:", this.steps ? this.steps.length : "undefined");
 
-    if (this.steps && this.steps[0]) {
-      console.log("First step found, making it visible");
-      console.log("First step element:", this.steps[0]);
-      console.log("First step display before:", this.steps[0].style.display);
+    if (this.steps && this.steps[1]) {
+      console.log("Second step found, making it visible");
+      console.log("Second step element:", this.steps[1]);
+      console.log("Second step display before:", this.steps[1].style.display);
 
-      this.steps[0].style.display = "block";
-      this.steps[0].classList.add("is-active");
-      this.steps[0].setAttribute("data-if-active", "true");
+      // Hide the first step (landing page step)
+      if (this.steps[0]) {
+        this.steps[0].style.display = "none";
+        this.steps[0].classList.remove("is-active");
+        this.steps[0].removeAttribute("data-if-active");
+        console.log("First step hidden");
+      }
+
+      // Show the second step (first actual quiz step)
+      this.steps[1].style.display = "block";
+      this.steps[1].classList.add("is-active");
+      this.steps[1].setAttribute("data-if-active", "true");
 
       // Force the step to be visible and check computed styles
-      this.steps[0].style.visibility = "visible";
-      this.steps[0].style.opacity = "1";
+      this.steps[1].style.visibility = "visible";
+      this.steps[1].style.opacity = "1";
 
-      console.log("First step display after:", this.steps[0].style.display);
-      console.log("First step classes after:", this.steps[0].className);
+      console.log("Second step display after:", this.steps[1].style.display);
+      console.log("Second step classes after:", this.steps[1].className);
       console.log(
-        "First step computed display:",
-        window.getComputedStyle(this.steps[0]).display
+        "Second step computed display:",
+        window.getComputedStyle(this.steps[1]).display
       );
       console.log(
-        "First step computed visibility:",
-        window.getComputedStyle(this.steps[0]).visibility
+        "Second step computed visibility:",
+        window.getComputedStyle(this.steps[1]).visibility
       );
       console.log(
-        "First step computed opacity:",
-        window.getComputedStyle(this.steps[0]).opacity
+        "Second step computed opacity:",
+        window.getComputedStyle(this.steps[1]).opacity
       );
     } else {
-      console.log("No steps found or steps[0] is undefined");
+      console.log("No second step found or steps[1] is undefined");
     }
 
     // Ensure currentStep is set to 0 when starting the quiz
