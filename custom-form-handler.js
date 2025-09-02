@@ -46,6 +46,39 @@ const utils = {
       document.head.appendChild(style);
     }
   },
+
+  addProgressAnimations: () => {
+    if (!document.getElementById("progress-animations")) {
+      const style = document.createElement("style");
+      style.id = "progress-animations";
+      style.textContent = `
+        [if-element="progress-step"] {
+          transition: opacity 200ms ease-out;
+        }
+        
+        [if-element="progress-step"].is-active {
+          opacity: 1 !important;
+          transform: scale(1.05);
+          transition: all 200ms ease-out;
+        }
+        
+        [if-element="progress-step"].is-completed {
+          opacity: 1 !important;
+          transition: opacity 200ms ease-out;
+        }
+        
+        [if-element="progress-step"]:not(.is-active):not(.is-completed) {
+          opacity: 0.3 !important;
+          transition: opacity 200ms ease-out;
+        }
+        
+        [if-element="progress-bar"] {
+          transition: width 300ms ease-out;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  },
 };
 
 // Main Form Handler Class
@@ -83,8 +116,9 @@ class OptimizedFormHandler {
     this.setupConditionalLogic();
     this.updateProgress();
 
-    // Add shake animation CSS
+    // Add animation CSS
     utils.addShakeAnimation();
+    utils.addProgressAnimations();
   }
 
   setupForm() {
@@ -229,26 +263,35 @@ class OptimizedFormHandler {
   }
 
   initializeProgressSteps() {
-    // Initialize existing progress steps with proper classes
+    // Initialize existing progress steps with proper classes and fade effects
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
     );
     if (progressSteps.length) {
       progressSteps.forEach((step, index) => {
+        // Set transition for smooth animations
+        step.style.transition = "opacity 200ms ease-out";
+
         if (index === 0) {
+          // First step - active and visible
           step.classList.add("is-active");
+          step.classList.remove("is-completed");
+          step.style.opacity = "1";
         } else {
+          // Other steps - inactive and faded
           step.classList.remove("is-active", "is-completed");
+          step.style.opacity = "0.3";
         }
       });
     }
 
-    // Initialize progress bar width
+    // Initialize progress bar width with smooth transition
     const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
     if (progressBar.length) {
       const initialProgress = 1 / this.totalSteps;
       progressBar.forEach((bar) => {
+        bar.style.transition = "width 300ms ease-out";
         bar.style.setProperty("width", `${initialProgress * 100}%`);
       });
     }
@@ -257,30 +300,40 @@ class OptimizedFormHandler {
   updateProgress() {
     if (!this.config.showProgress) return;
 
-    // Update progress steps (existing elements with [if-element='progress-step'])
+    // Update progress steps with proper fade animations (like original InputFlow)
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
     );
     if (progressSteps.length) {
       progressSteps.forEach((step, index) => {
+        // Apply fade transition
+        step.style.transition = "opacity 200ms ease-out";
+
         if (index <= this.currentStep) {
+          // Completed steps - fade in with completed class
           step.classList.add("is-completed");
           step.classList.remove("is-active");
+          step.style.opacity = "1";
         } else if (index === this.currentStep + 1) {
+          // Current active step - highlight with active class
           step.classList.add("is-active");
           step.classList.remove("is-completed");
+          step.style.opacity = "1";
         } else {
+          // Future steps - fade out and remove classes
           step.classList.remove("is-active", "is-completed");
+          step.style.opacity = "0.3";
         }
       });
     }
 
-    // Update progress bar width (existing element with [if-element='progress-bar'])
+    // Update progress bar width with smooth animation
     const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
     if (progressBar.length) {
       const progressPercentage = (this.currentStep + 1) / this.totalSteps;
       progressBar.forEach((bar) => {
+        bar.style.transition = "width 300ms ease-out";
         bar.style.setProperty("width", `${progressPercentage * 100}%`);
       });
     }
@@ -350,6 +403,9 @@ class OptimizedFormHandler {
     toStep.style.opacity = "1";
 
     await new Promise((resolve) => setTimeout(resolve, transitionDuration));
+
+    // Update progress steps with animation after step change
+    this.animateProgressSteps(direction);
   }
 
   updateStepStates() {
@@ -623,6 +679,48 @@ class OptimizedFormHandler {
 
     // Default: validate if field has any value or is required
     return field.value.trim() !== "" || field.hasAttribute("required");
+  }
+
+  animateProgressSteps(direction) {
+    // Animate progress steps with fade effects (like original InputFlow)
+    const progressSteps = utils.qa(
+      '[if-element="progress-step"]',
+      document.body
+    );
+    if (!progressSteps.length) return;
+
+    const currentStepIndex = this.currentStep;
+
+    progressSteps.forEach((step, index) => {
+      // Set transition for smooth animations
+      step.style.transition = "opacity 200ms ease-out";
+
+      if (index <= currentStepIndex) {
+        // Completed steps - fade in with completed class
+        step.classList.add("is-completed");
+        step.classList.remove("is-active");
+        step.style.opacity = "1";
+      } else if (index === currentStepIndex + 1) {
+        // Current active step - highlight with active class
+        step.classList.add("is-active");
+        step.classList.remove("is-completed");
+        step.style.opacity = "1";
+      } else {
+        // Future steps - fade out and remove classes
+        step.classList.remove("is-active", "is-completed");
+        step.style.opacity = "0.3";
+      }
+    });
+
+    // Animate progress bar width smoothly
+    const progressBar = utils.qa('[if-element="progress-bar"]', document.body);
+    if (progressBar.length) {
+      const progressPercentage = (currentStepIndex + 1) / this.totalSteps;
+      progressBar.forEach((bar) => {
+        bar.style.transition = "width 300ms ease-out";
+        bar.style.setProperty("width", `${progressPercentage * 100}%`);
+      });
+    }
   }
 
   handleAutoAdvance(field) {
