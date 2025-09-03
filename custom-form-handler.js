@@ -116,8 +116,8 @@ class OptimizedFormHandler {
 
     // Create reverse mapping for progress bar: HTML index -> logical index
     this.progressMapping = {};
-    for (let i = 1; i < this.totalSteps; i++) {
-      this.progressMapping[i] = i - 1; // HTML index 1 = logical step 0, HTML index 2 = logical step 1, etc.
+    for (let i = 0; i < this.totalSteps - 1; i++) {
+      this.progressMapping[i] = i; // HTML index 0 = logical step 0, HTML index 1 = logical step 1, etc.
     }
     console.log("setupForm: Progress mapping created:", this.progressMapping);
 
