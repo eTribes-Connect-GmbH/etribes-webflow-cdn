@@ -722,7 +722,8 @@ class OptimizedFormHandler {
       document.body
     );
     if (progressLineFill.length) {
-      const progressPercentage = (this.currentStep + 1) / this.totalSteps;
+      // Fix: Don't add +1 to currentStep - progress should match the current step exactly
+      const progressPercentage = this.currentStep / this.totalSteps;
       progressLineFill.forEach((fill) => {
         // Only manage classes, no inline styles
         if (progressPercentage > 0) {
@@ -744,7 +745,8 @@ class OptimizedFormHandler {
 
     progressElements.forEach((element) => {
       // Only manage classes, CSS will handle the visual transitions
-      const currentProgress = (this.currentStep + 1) / this.totalSteps;
+      // Fix: Don't add +1 to currentStep - progress should match the current step exactly
+      const currentProgress = this.currentStep / this.totalSteps;
 
       if (currentProgress > 0) {
         element.classList.add("is-completed");
