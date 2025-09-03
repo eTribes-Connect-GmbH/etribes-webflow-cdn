@@ -115,6 +115,13 @@ class OptimizedFormHandler {
     }
     console.log("setupForm: Step mapping created:", this.stepMapping);
 
+    // Create reverse mapping for progress bar: HTML index -> logical index
+    this.progressMapping = {};
+    for (let i = 1; i < this.totalSteps; i++) {
+      this.progressMapping[i] = i - 1; // HTML index 1 = logical step 0, HTML index 2 = logical step 1, etc.
+    }
+    console.log("setupForm: Progress mapping created:", this.progressMapping);
+
     // Initialize step states
     this.initializeStepStates(this.steps);
   }
@@ -489,10 +496,8 @@ class OptimizedFormHandler {
       progressSteps.forEach((step, index) => {
         console.log(`Progress step ${index} HTML:`, step.outerHTML);
 
-        // Get the logical step index from the mapping
-        const logicalStepIndex = Object.keys(this.stepMapping).find(
-          (key) => this.stepMapping[key] === index
-        );
+        // Get the logical step index from the progress mapping
+        const logicalStepIndex = this.progressMapping[index];
 
         console.log(
           `Progress step ${index}: HTML index -> logical index: ${logicalStepIndex}`
