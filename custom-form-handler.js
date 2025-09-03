@@ -536,16 +536,26 @@ class OptimizedFormHandler {
         );
       }
     } else if (direction === "back") {
-      // Reverse the process
+      // When going back: remove is-active and is-completed from current step
       const currentStepIndex = this.currentStep;
       const previousStepIndex = this.currentStep - 1;
 
-      // Current step becomes inactive
+      // Current step becomes inactive (remove all classes)
       const currentProgressStep =
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
-        console.log(`Marking current step ${currentStepIndex} as inactive`);
+        console.log(
+          `Marking current step ${currentStepIndex} as inactive (removing all classes)`
+        );
+        console.log(
+          "Current step element before:",
+          currentProgressStep.outerHTML
+        );
         this.updateProgressStepClasses(currentProgressStep, "future");
+        console.log(
+          "Current step element after:",
+          currentProgressStep.outerHTML
+        );
       }
 
       // Previous step becomes active
@@ -554,7 +564,15 @@ class OptimizedFormHandler {
           this.findProgressStepByLogicalIndex(previousStepIndex);
         if (previousProgressStep) {
           console.log(`Marking previous step ${previousStepIndex} as active`);
+          console.log(
+            "Previous step element before:",
+            previousProgressStep.outerHTML
+          );
           this.updateProgressStepClasses(previousProgressStep, "active");
+          console.log(
+            "Previous step element after:",
+            previousProgressStep.outerHTML
+          );
         }
       }
     }
