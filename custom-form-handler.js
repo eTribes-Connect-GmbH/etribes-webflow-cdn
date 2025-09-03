@@ -577,11 +577,17 @@ class OptimizedFormHandler {
   updateProgress() {
     if (!this.config.showProgress) return;
 
+    console.log("=== updateProgress called ===");
+    console.log("currentStep:", this.currentStep);
+    console.log("stepMapping:", this.stepMapping);
+
     // Update progress steps using classes only - let CSS handle animations
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
     );
+    console.log("Found progress steps:", progressSteps.length);
+
     if (progressSteps.length) {
       progressSteps.forEach((step, index) => {
         // Get the logical step index from the mapping
@@ -589,24 +595,34 @@ class OptimizedFormHandler {
           (key) => this.stepMapping[key] === index
         );
 
+        console.log(
+          `Progress step ${index}: HTML index -> logical index: ${logicalStepIndex}`
+        );
+
         if (logicalStepIndex !== undefined) {
           const logicalIndex = parseInt(logicalStepIndex);
+          console.log(
+            `  Logical index: ${logicalIndex}, currentStep: ${this.currentStep}`
+          );
 
           if (logicalIndex < this.currentStep) {
             // Completed steps - fade in with completed class
+            console.log(`  Setting step ${index} as COMPLETED`);
             step.classList.add("is-completed");
             step.classList.remove("is-active");
           } else if (logicalIndex === this.currentStep) {
             // Current active step - highlight with active class
+            console.log(`  Setting step ${index} as ACTIVE`);
             step.classList.add("is-active");
             step.classList.remove("is-completed");
           } else {
             // Future steps - fade out and remove classes
+            console.log(`  Setting step ${index} as FUTURE (no classes)`);
             step.classList.remove("is-active", "is-completed");
           }
         } else {
           // This step is not in our mapping (likely the landing page)
-          // Remove all classes
+          console.log(`  Step ${index} not in mapping, removing all classes`);
           step.classList.remove("is-active", "is-completed");
         }
       });
@@ -759,7 +775,14 @@ class OptimizedFormHandler {
   }
 
   async previousStep() {
-    if (!this.steps || this.currentStep <= 0) return;
+    console.log("=== previousStep called ===");
+    console.log("currentStep before:", this.currentStep);
+    console.log("stepMapping:", this.stepMapping);
+
+    if (!this.steps || this.currentStep <= 0) {
+      console.log("previousStep blocked - no steps or at first step");
+      return;
+    }
 
     // Get the actual HTML step indices from the mapping
     const currentHtmlIndex = this.stepMapping[this.currentStep];
@@ -767,12 +790,23 @@ class OptimizedFormHandler {
     const currentStep = this.steps[currentHtmlIndex];
     const prevStep = this.steps[prevHtmlIndex];
 
+    console.log("currentHtmlIndex:", currentHtmlIndex);
+    console.log("prevHtmlIndex:", prevHtmlIndex);
+    console.log("currentStep element:", currentStep);
+    console.log("prevStep element:", prevStep);
+
     // Animate step transition
     await this.transitionToStep(currentStep, prevStep, "prev");
 
     this.currentStep--;
+    console.log("currentStep after decrement:", this.currentStep);
+
+    console.log("Calling updateProgress...");
     this.updateProgress();
+
+    console.log("Calling updateStepStates...");
     this.updateStepStates();
+
     this.scrollToTop();
 
     // Dispatch step change event
