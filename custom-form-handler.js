@@ -480,17 +480,19 @@ class OptimizedFormHandler {
   }
 
   updateProgressTargeted(direction = "next") {
-    // Targeted method that only updates specific steps, not the entire progress bar
+    // Simple logic: if is-active and you proceed to next step,
+    // now previous step is is-completed and next step is is-active
+    // When user clicks back, just reverse it
     console.log("=== updateProgressTargeted called ===");
     console.log("Direction:", direction);
     console.log("Current step:", this.currentStep);
 
     if (direction === "next") {
-      // When going forward: mark previous step as completed, current step as active
+      // Mark previous step as completed, current step as active
       const previousStepIndex = this.currentStep - 1;
       const currentStepIndex = this.currentStep;
 
-      // Find and update the previous step (mark as completed)
+      // Previous step becomes completed
       if (previousStepIndex >= 0) {
         const previousProgressStep =
           this.findProgressStepByLogicalIndex(previousStepIndex);
@@ -502,7 +504,7 @@ class OptimizedFormHandler {
         }
       }
 
-      // Find and update the current step (mark as active)
+      // Current step becomes active
       const currentProgressStep =
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
@@ -510,11 +512,11 @@ class OptimizedFormHandler {
         this.updateProgressStepClasses(currentProgressStep, "active");
       }
     } else if (direction === "back") {
-      // When going backward: mark current step as inactive, previous step as active
+      // Reverse the process
       const currentStepIndex = this.currentStep;
       const previousStepIndex = this.currentStep - 1;
 
-      // Find and update the current step (remove active, keep completed)
+      // Current step becomes inactive
       const currentProgressStep =
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
@@ -522,7 +524,7 @@ class OptimizedFormHandler {
         this.updateProgressStepClasses(currentProgressStep, "future");
       }
 
-      // Find and update the previous step (mark as active)
+      // Previous step becomes active
       if (previousStepIndex >= 0) {
         const previousProgressStep =
           this.findProgressStepByLogicalIndex(previousStepIndex);
@@ -601,14 +603,12 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-completed");
           progressPoint.classList.add("is-active");
         }
-        // Progress line should be active for current step
+        // Progress line should NOT be active for current step - it extends to future
         if (progressLine) {
-          progressLine.classList.remove("is-completed");
-          progressLine.classList.add("is-active");
+          progressLine.classList.remove("is-active", "is-completed");
         }
         if (progressLineFill) {
-          progressLineFill.classList.remove("is-completed");
-          progressLineFill.classList.add("is-active");
+          progressLineFill.classList.remove("is-active", "is-completed");
         }
         if (progressName) {
           progressName.classList.remove("is-completed");
