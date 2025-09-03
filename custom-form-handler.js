@@ -509,6 +509,7 @@ class OptimizedFormHandler {
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
         console.log(`Marking current step ${currentStepIndex} as active`);
+        console.log(`Current step element:`, currentProgressStep);
         this.updateProgressStepClasses(currentProgressStep, "active");
       }
     } else if (direction === "back") {
@@ -605,9 +606,13 @@ class OptimizedFormHandler {
         }
         // Progress line should NOT be active for current step - it extends to future
         if (progressLine) {
+          console.log(`Removing classes from progress line of active step`);
           progressLine.classList.remove("is-active", "is-completed");
         }
         if (progressLineFill) {
+          console.log(
+            `Removing classes from progress line fill of active step`
+          );
           progressLineFill.classList.remove("is-active", "is-completed");
         }
         if (progressName) {
