@@ -429,6 +429,17 @@ class OptimizedFormHandler {
             radioIcon.classList.remove("is-active", "w--redirected-checked");
             console.log(`Removed classes from radio icon ${index}:`, radioIcon);
           }
+
+          // Also remove classes from the option label span
+          const optionLabelSpan =
+            optionLabel.querySelector(".quiz_option-label");
+          if (optionLabelSpan) {
+            optionLabelSpan.classList.remove("is-active");
+            console.log(
+              `Removed is-active from option label span ${index}:`,
+              optionLabelSpan
+            );
+          }
         }
       });
 
@@ -441,6 +452,13 @@ class OptimizedFormHandler {
       if (radioIcon) {
         radioIcon.classList.add("is-active", "w--redirected-checked");
         console.log("Added classes to radio icon:", radioIcon);
+      }
+
+      // Also add classes to the option label span
+      const optionLabelSpan = clickedOption.querySelector(".quiz_option-label");
+      if (optionLabelSpan) {
+        optionLabelSpan.classList.add("is-active");
+        console.log("Added is-active to option label span:", optionLabelSpan);
       }
 
       // Also check the input to make sure it's selected
@@ -458,6 +476,13 @@ class OptimizedFormHandler {
         checkboxIcon.classList.toggle("is-active");
         checkboxIcon.classList.toggle("w--redirected-checked");
         console.log("Toggled classes on checkbox icon:", checkboxIcon);
+      }
+
+      // Also toggle classes on the option label span
+      const optionLabelSpan = clickedOption.querySelector(".quiz_option-label");
+      if (optionLabelSpan) {
+        optionLabelSpan.classList.toggle("is-active");
+        console.log("Toggled is-active on option label span:", optionLabelSpan);
       }
 
       console.log(
