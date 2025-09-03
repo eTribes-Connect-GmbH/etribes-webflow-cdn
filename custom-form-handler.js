@@ -492,7 +492,7 @@ class OptimizedFormHandler {
       const previousStepIndex = this.currentStep - 1;
       const currentStepIndex = this.currentStep;
 
-      // Previous step becomes completed
+      // Previous step becomes completed (only if it exists)
       if (previousStepIndex >= 0) {
         const previousProgressStep =
           this.findProgressStepByLogicalIndex(previousStepIndex);
@@ -502,6 +502,10 @@ class OptimizedFormHandler {
           );
           this.updateProgressStepClasses(previousProgressStep, "completed");
         }
+      } else {
+        console.log(
+          `No previous step to mark as completed (currentStep: ${this.currentStep})`
+        );
       }
 
       // Current step becomes active
@@ -511,6 +515,10 @@ class OptimizedFormHandler {
         console.log(`Marking current step ${currentStepIndex} as active`);
         console.log(`Current step element:`, currentProgressStep);
         this.updateProgressStepClasses(currentProgressStep, "active");
+      } else {
+        console.log(
+          `ERROR: Could not find progress step for logical index ${currentStepIndex}`
+        );
       }
     } else if (direction === "back") {
       // Reverse the process
