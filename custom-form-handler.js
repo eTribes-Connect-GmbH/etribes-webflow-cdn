@@ -638,47 +638,6 @@ class OptimizedFormHandler {
     }
   }
 
-  updateProgressLineFill() {
-    // Update progress line fill with quiz_progress-line-fill class
-    const progressLineFill = utils.qa(
-      ".quiz_progress-line-fill",
-      document.body
-    );
-    if (progressLineFill.length) {
-      // Fix: Don't add +1 to currentStep - progress should match the current step exactly
-      const progressPercentage = this.currentStep / this.totalSteps;
-      progressLineFill.forEach((fill) => {
-        // Only manage classes, no inline styles
-        if (progressPercentage > 0) {
-          fill.classList.add("is-completed");
-        } else {
-          fill.classList.remove("is-completed");
-        }
-      });
-    }
-  }
-
-  animateProgressFadeAway() {
-    // Animate existing progress to fade away slowly and reset to default
-    // Only manage classes, no inline styles - let CSS handle animations
-    const progressElements = [
-      ...utils.qa('[if-element="progress-bar"]', document.body),
-      ...utils.qa(".quiz_progress-line-fill", document.body),
-    ];
-
-    progressElements.forEach((element) => {
-      // Only manage classes, CSS will handle the visual transitions
-      // Fix: Don't add +1 to currentStep - progress should match the current step exactly
-      const currentProgress = this.currentStep / this.totalSteps;
-
-      if (currentProgress > 0) {
-        element.classList.add("is-completed");
-      } else {
-        element.classList.remove("is-completed");
-      }
-    });
-  }
-
   startInitialFadeAway() {
     // Aggressive approach: remove is-completed from every element on the page
     const allElements = document.querySelectorAll("*");
@@ -846,9 +805,6 @@ class OptimizedFormHandler {
 
     // Update progress steps with animation after step change
     this.animateProgressSteps(direction);
-
-    // Animate progress fade away effect
-    this.animateProgressFadeAway();
   }
 
   updateStepStates() {
