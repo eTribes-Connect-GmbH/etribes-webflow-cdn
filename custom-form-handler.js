@@ -584,16 +584,29 @@ class OptimizedFormHandler {
     );
     if (progressSteps.length) {
       progressSteps.forEach((step, index) => {
-        if (index <= this.currentStep) {
-          // Completed steps - fade in with completed class
-          step.classList.add("is-completed");
-          step.classList.remove("is-active");
-        } else if (index === this.currentStep + 1) {
-          // Current active step - highlight with active class
-          step.classList.add("is-active");
-          step.classList.remove("is-completed");
+        // Get the logical step index from the mapping
+        const logicalStepIndex = Object.keys(this.stepMapping).find(
+          (key) => this.stepMapping[key] === index
+        );
+
+        if (logicalStepIndex !== undefined) {
+          const logicalIndex = parseInt(logicalStepIndex);
+
+          if (logicalIndex < this.currentStep) {
+            // Completed steps - fade in with completed class
+            step.classList.add("is-completed");
+            step.classList.remove("is-active");
+          } else if (logicalIndex === this.currentStep) {
+            // Current active step - highlight with active class
+            step.classList.add("is-active");
+            step.classList.remove("is-completed");
+          } else {
+            // Future steps - fade out and remove classes
+            step.classList.remove("is-active", "is-completed");
+          }
         } else {
-          // Future steps - fade out and remove classes
+          // This step is not in our mapping (likely the landing page)
+          // Remove all classes
           step.classList.remove("is-active", "is-completed");
         }
       });
