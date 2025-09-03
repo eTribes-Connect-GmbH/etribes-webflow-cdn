@@ -156,6 +156,7 @@ class OptimizedFormHandler {
     this.bindFormEvents();
     this.bindStepNavigation();
     this.bindValidationEvents();
+    this.bindQuizOptionEvents();
     this.bindAutoAdvance();
   }
 
@@ -359,6 +360,55 @@ class OptimizedFormHandler {
         true
       );
     }
+  }
+
+  bindQuizOptionEvents() {
+    // Bind events for quiz options to handle is-active class switching
+    const quizOptions = utils.qa(".quiz_option", this.form);
+
+    quizOptions.forEach((option) => {
+      utils.addEvent(option, "click", (e) => {
+        this.handleQuizOptionClick(e.target);
+      });
+    });
+  }
+
+  handleQuizOptionClick(clickedOption) {
+    // Find the radio/checkbox input within the clicked option
+    const input = clickedOption.querySelector(
+      'input[type="radio"], input[type="checkbox"]'
+    );
+    if (!input) return;
+
+    const questionName = input.name;
+    const isRadio = input.type === "radio";
+
+    if (isRadio) {
+      // For radio buttons: remove is-active from all options in the same group, then add to clicked option
+      const allOptionsInGroup = utils.qa(
+        `.quiz_option input[name="${questionName}"]`,
+        this.form
+      );
+
+      allOptionsInGroup.forEach((optionInput) => {
+        const optionLabel = optionInput.closest(".quiz_option");
+        if (optionLabel) {
+          optionLabel.classList.remove("is-active");
+        }
+      });
+
+      // Add is-active to the clicked option
+      clickedOption.classList.add("is-active");
+    } else {
+      // For checkboxes: toggle is-active class
+      clickedOption.classList.toggle("is-active");
+    }
+
+    console.log(
+      `Quiz option clicked: ${input.value}, is-active class ${
+        clickedOption.classList.contains("is-active") ? "added" : "removed"
+      }`
+    );
   }
 
   bindAutoAdvance() {
