@@ -581,7 +581,12 @@ class OptimizedFormHandler {
     console.log("currentStep:", this.currentStep);
     console.log("stepMapping:", this.stepMapping);
 
-    // Update progress steps using classes only - let CSS handle animations
+    // Use the unified progress update method (used by both next and back navigation)
+    this.updateProgressUnified();
+  }
+
+  updateProgressUnified() {
+    // Unified method for updating progress - used by both next and back navigation
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
@@ -608,28 +613,106 @@ class OptimizedFormHandler {
           if (logicalIndex < this.currentStep) {
             // Completed steps - fade in with completed class
             console.log(`  Setting step ${index} as COMPLETED`);
-            step.classList.add("is-completed");
-            step.classList.remove("is-active");
+            this.updateProgressStepClasses(step, "completed");
           } else if (logicalIndex === this.currentStep) {
             // Current active step - highlight with active class
             console.log(`  Setting step ${index} as ACTIVE`);
-            step.classList.add("is-active");
-            step.classList.remove("is-completed");
+            this.updateProgressStepClasses(step, "active");
           } else {
             // Future steps - fade out and remove classes
             console.log(`  Setting step ${index} as FUTURE (no classes)`);
-            step.classList.remove("is-active", "is-completed");
+            this.updateProgressStepClasses(step, "future");
           }
         } else {
           // This step is not in our mapping (likely the landing page)
           console.log(`  Step ${index} not in mapping, removing all classes`);
-          step.classList.remove("is-active", "is-completed");
+          this.updateProgressStepClasses(step, "future");
         }
       });
     }
+  }
 
-    // Progress bar width is handled by CSS based on classes
-    // No inline styles needed
+  updateProgressStepClasses(step, state) {
+    // Helper method to update classes for a progress step and all its children
+    const progressGraphic = step.querySelector(".quiz_progress-graphic");
+    const progressPoint = step.querySelector(".quiz_progress-point");
+    const progressLine = step.querySelector(".quiz_progress-line");
+    const progressLineFill = step.querySelector(".quiz_progress-line-fill");
+    const progressName = step.querySelector(".quiz_progress-name");
+
+    switch (state) {
+      case "completed":
+        step.classList.add("is-completed");
+        step.classList.remove("is-active");
+
+        if (progressGraphic) {
+          progressGraphic.classList.remove("is-active");
+          progressGraphic.classList.add("is-completed");
+        }
+        if (progressPoint) {
+          progressPoint.classList.remove("is-active");
+          progressPoint.classList.add("is-completed");
+        }
+        if (progressLine) {
+          progressLine.classList.remove("is-active");
+          progressLine.classList.add("is-completed");
+        }
+        if (progressLineFill) {
+          progressLineFill.classList.remove("is-active");
+          progressLineFill.classList.add("is-completed");
+        }
+        if (progressName) {
+          progressName.classList.remove("is-active");
+          progressName.classList.add("is-completed");
+        }
+        break;
+
+      case "active":
+        step.classList.add("is-active");
+        step.classList.remove("is-completed");
+
+        if (progressGraphic) {
+          progressGraphic.classList.remove("is-completed");
+          progressGraphic.classList.add("is-active");
+        }
+        if (progressPoint) {
+          progressPoint.classList.remove("is-completed");
+          progressPoint.classList.add("is-active");
+        }
+        if (progressLine) {
+          progressLine.classList.remove("is-completed");
+          progressLine.classList.add("is-active");
+        }
+        if (progressLineFill) {
+          progressLineFill.classList.remove("is-completed");
+          progressLineFill.classList.add("is-active");
+        }
+        if (progressName) {
+          progressName.classList.remove("is-completed");
+          progressName.classList.add("is-active");
+        }
+        break;
+
+      case "future":
+        step.classList.remove("is-active", "is-completed");
+
+        if (progressGraphic) {
+          progressGraphic.classList.remove("is-active", "is-completed");
+        }
+        if (progressPoint) {
+          progressPoint.classList.remove("is-active", "is-completed");
+        }
+        if (progressLine) {
+          progressLine.classList.remove("is-active", "is-completed");
+        }
+        if (progressLineFill) {
+          progressLineFill.classList.remove("is-active", "is-completed");
+        }
+        if (progressName) {
+          progressName.classList.remove("is-active", "is-completed");
+        }
+        break;
+    }
   }
 
   updateProgressLineFill() {
@@ -757,7 +840,6 @@ class OptimizedFormHandler {
 
       this.updateProgress();
       this.updateStepStates();
-      this.updateProgressClasses();
       this.scrollToTop();
 
       // Dispatch step change event
