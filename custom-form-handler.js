@@ -630,8 +630,17 @@ class OptimizedFormHandler {
           }
         } else {
           // This step is not in our mapping (likely the landing page)
-          console.log(`  Step ${index} not in mapping, removing all classes`);
-          this.updateProgressStepClasses(step, "future");
+          if (index === 0) {
+            // Step 0 is the landing page - always mark as completed
+            console.log(
+              `  Step ${index} is landing page, setting as COMPLETED`
+            );
+            this.updateProgressStepClasses(step, "completed");
+          } else {
+            // Other unmapped steps - remove all classes
+            console.log(`  Step ${index} not in mapping, removing all classes`);
+            this.updateProgressStepClasses(step, "future");
+          }
         }
       });
     }
