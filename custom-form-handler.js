@@ -422,6 +422,13 @@ class OptimizedFormHandler {
         if (optionLabel) {
           console.log(`Removing is-active from option ${index}:`, optionLabel);
           optionLabel.classList.remove("is-active");
+
+          // Also remove classes from the radio input icon
+          const radioIcon = optionLabel.querySelector(".w-form-formradioinput");
+          if (radioIcon) {
+            radioIcon.classList.remove("is-active", "w--redirected-checked");
+            console.log(`Removed classes from radio icon ${index}:`, radioIcon);
+          }
         }
       });
 
@@ -429,12 +436,30 @@ class OptimizedFormHandler {
       console.log("Adding is-active to clicked option:", clickedOption);
       clickedOption.classList.add("is-active");
 
+      // Also add classes to the radio input icon
+      const radioIcon = clickedOption.querySelector(".w-form-formradioinput");
+      if (radioIcon) {
+        radioIcon.classList.add("is-active", "w--redirected-checked");
+        console.log("Added classes to radio icon:", radioIcon);
+      }
+
       // Also check the input to make sure it's selected
       input.checked = true;
     } else {
       // For checkboxes: toggle is-active class
       console.log("Processing checkbox selection");
       clickedOption.classList.toggle("is-active");
+
+      // Also toggle classes on the checkbox icon
+      const checkboxIcon = clickedOption.querySelector(
+        ".w-form-formradioinput"
+      );
+      if (checkboxIcon) {
+        checkboxIcon.classList.toggle("is-active");
+        checkboxIcon.classList.toggle("w--redirected-checked");
+        console.log("Toggled classes on checkbox icon:", checkboxIcon);
+      }
+
       console.log(
         "Checkbox is-active state:",
         clickedOption.classList.contains("is-active")
