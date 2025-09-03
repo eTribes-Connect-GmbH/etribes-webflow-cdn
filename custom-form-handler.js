@@ -367,47 +367,88 @@ class OptimizedFormHandler {
     const quizOptions = utils.qa(".quiz_option", this.form);
 
     quizOptions.forEach((option) => {
+      // Bind to both the label and the input for better coverage
       utils.addEvent(option, "click", (e) => {
-        this.handleQuizOptionClick(e.target);
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleQuizOptionClick(option);
       });
+
+      // Also bind to the input's change event as a backup
+      const input = option.querySelector(
+        'input[type="radio"], input[type="checkbox"]'
+      );
+      if (input) {
+        utils.addEvent(input, "change", (e) => {
+          this.handleQuizOptionClick(option);
+        });
+      }
     });
   }
 
   handleQuizOptionClick(clickedOption) {
+    console.log("=== handleQuizOptionClick called ===");
+    console.log("Clicked option:", clickedOption);
+
     // Find the radio/checkbox input within the clicked option
     const input = clickedOption.querySelector(
       'input[type="radio"], input[type="checkbox"]'
     );
-    if (!input) return;
+    if (!input) {
+      console.log("No input found in clicked option");
+      return;
+    }
 
     const questionName = input.name;
     const isRadio = input.type === "radio";
 
+    console.log("Input found:", input);
+    console.log("Question name:", questionName);
+    console.log("Is radio:", isRadio);
+
     if (isRadio) {
       // For radio buttons: remove is-active from all options in the same group, then add to clicked option
+      console.log("Processing radio button selection");
+
       const allOptionsInGroup = utils.qa(
         `.quiz_option input[name="${questionName}"]`,
         this.form
       );
 
-      allOptionsInGroup.forEach((optionInput) => {
+      console.log("Found options in group:", allOptionsInGroup.length);
+
+      allOptionsInGroup.forEach((optionInput, index) => {
         const optionLabel = optionInput.closest(".quiz_option");
         if (optionLabel) {
+          console.log(`Removing is-active from option ${index}:`, optionLabel);
           optionLabel.classList.remove("is-active");
         }
       });
 
       // Add is-active to the clicked option
+      console.log("Adding is-active to clicked option:", clickedOption);
       clickedOption.classList.add("is-active");
+
+      // Also check the input to make sure it's selected
+      input.checked = true;
     } else {
       // For checkboxes: toggle is-active class
+      console.log("Processing checkbox selection");
       clickedOption.classList.toggle("is-active");
+      console.log(
+        "Checkbox is-active state:",
+        clickedOption.classList.contains("is-active")
+      );
     }
 
     console.log(
       `Quiz option clicked: ${input.value}, is-active class ${
         clickedOption.classList.contains("is-active") ? "added" : "removed"
       }`
+    );
+    console.log(
+      "Final state - clicked option classes:",
+      clickedOption.className
     );
   }
 
