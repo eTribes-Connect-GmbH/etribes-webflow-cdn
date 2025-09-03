@@ -475,78 +475,82 @@ class OptimizedFormHandler {
     console.log("currentStep:", this.currentStep);
     console.log("stepMapping:", this.stepMapping);
 
-    // Use the unified progress update method (used by both next and back navigation)
-    this.updateProgressUnified("next");
+    // Only update the specific steps that need to change, not the entire progress bar
+    this.updateProgressTargeted("next");
   }
 
-  updateProgressUnified(direction = "next") {
-    // Unified method for updating progress - used by both next and back navigation
+  updateProgressTargeted(direction = "next") {
+    // Targeted method that only updates specific steps, not the entire progress bar
+    console.log("=== updateProgressTargeted called ===");
+    console.log("Direction:", direction);
+    console.log("Current step:", this.currentStep);
+
+    if (direction === "next") {
+      // When going forward: mark previous step as completed, current step as active
+      const previousStepIndex = this.currentStep - 1;
+      const currentStepIndex = this.currentStep;
+
+      // Find and update the previous step (mark as completed)
+      if (previousStepIndex >= 0) {
+        const previousProgressStep =
+          this.findProgressStepByLogicalIndex(previousStepIndex);
+        if (previousProgressStep) {
+          console.log(
+            `Marking previous step ${previousStepIndex} as completed`
+          );
+          this.updateProgressStepClasses(previousProgressStep, "completed");
+        }
+      }
+
+      // Find and update the current step (mark as active)
+      const currentProgressStep =
+        this.findProgressStepByLogicalIndex(currentStepIndex);
+      if (currentProgressStep) {
+        console.log(`Marking current step ${currentStepIndex} as active`);
+        this.updateProgressStepClasses(currentProgressStep, "active");
+      }
+    } else if (direction === "back") {
+      // When going backward: mark current step as inactive, previous step as active
+      const currentStepIndex = this.currentStep;
+      const previousStepIndex = this.currentStep - 1;
+
+      // Find and update the current step (remove active, keep completed)
+      const currentProgressStep =
+        this.findProgressStepByLogicalIndex(currentStepIndex);
+      if (currentProgressStep) {
+        console.log(`Marking current step ${currentStepIndex} as inactive`);
+        this.updateProgressStepClasses(currentProgressStep, "future");
+      }
+
+      // Find and update the previous step (mark as active)
+      if (previousStepIndex >= 0) {
+        const previousProgressStep =
+          this.findProgressStepByLogicalIndex(previousStepIndex);
+        if (previousProgressStep) {
+          console.log(`Marking previous step ${previousStepIndex} as active`);
+          this.updateProgressStepClasses(previousProgressStep, "active");
+        }
+      }
+    }
+  }
+
+  findProgressStepByLogicalIndex(logicalIndex) {
+    // Helper method to find a progress step by its logical index
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
       document.body
     );
-    console.log("Found progress steps:", progressSteps.length);
-    console.log("Current step mapping:", this.stepMapping);
-    console.log("Current logical step:", this.currentStep);
-    console.log("Direction:", direction);
 
-    if (progressSteps.length) {
-      console.log("=== HTML Structure Debug ===");
-      progressSteps.forEach((step, index) => {
-        console.log(`Progress step ${index} HTML:`, step.outerHTML);
+    for (let i = 0; i < progressSteps.length; i++) {
+      const step = progressSteps[i];
+      const stepLogicalIndex = this.progressMapping[i];
 
-        // Get the logical step index from the progress mapping
-        const logicalStepIndex = this.progressMapping[index];
-
-        console.log(
-          `Progress step ${index}: HTML index -> logical index: ${logicalStepIndex}`
-        );
-
-        if (logicalStepIndex !== undefined) {
-          const logicalIndex = parseInt(logicalStepIndex);
-          console.log(
-            `  Logical index: ${logicalIndex}, currentStep: ${this.currentStep}`
-          );
-
-          if (direction === "next") {
-            // For next navigation: show progress up to current step
-            if (logicalIndex < this.currentStep) {
-              // Completed steps - fade in with completed class
-              console.log(`  Setting step ${index} as COMPLETED`);
-              this.updateProgressStepClasses(step, "completed");
-            } else if (logicalIndex === this.currentStep) {
-              // Current active step - highlight with active class
-              console.log(`  Setting step ${index} as ACTIVE`);
-              this.updateProgressStepClasses(step, "active");
-            } else {
-              // Future steps - fade out and remove classes
-              console.log(`  Setting step ${index} as FUTURE (no classes)`);
-              this.updateProgressStepClasses(step, "future");
-            }
-          } else {
-            // For back navigation: show progress up to current step (same logic for now)
-            if (logicalIndex < this.currentStep) {
-              // Completed steps - fade in with completed class
-              console.log(`  Setting step ${index} as COMPLETED`);
-              this.updateProgressStepClasses(step, "completed");
-            } else if (logicalIndex === this.currentStep) {
-              // Current active step - highlight with active class
-              console.log(`  Setting step ${index} as ACTIVE`);
-              this.updateProgressStepClasses(step, "active");
-            } else {
-              // Future steps - fade out and remove classes
-              console.log(`  Setting step ${index} as FUTURE (no classes)`);
-              this.updateProgressStepClasses(step, "future");
-            }
-          }
-        } else {
-          // This step is not in our mapping (likely the landing page)
-          // All unmapped steps - remove all classes
-          console.log(`  Step ${index} not in mapping, removing all classes`);
-          this.updateProgressStepClasses(step, "future");
-        }
-      });
+      if (stepLogicalIndex === logicalIndex) {
+        return step;
+      }
     }
+
+    return null;
   }
 
   updateProgressStepClasses(step, state) {
@@ -752,10 +756,6 @@ class OptimizedFormHandler {
       console.log("Current HTML index:", currentHtmlIndex);
       console.log("Next HTML index:", nextHtmlIndex);
 
-      // Update progress BEFORE incrementing currentStep
-      console.log("Calling updateProgress before step increment...");
-      this.updateProgress();
-
       // Animate step transition
       await this.transitionToStep(currentStep, nextStep, "next");
 
@@ -765,6 +765,9 @@ class OptimizedFormHandler {
 
       console.log("Calling updateStepStates after step increment...");
       this.updateStepStates();
+
+      console.log("Calling updateProgress after step increment...");
+      this.updateProgress();
 
       this.scrollToTop();
 
