@@ -468,15 +468,16 @@ class OptimizedFormHandler {
     });
   }
 
-  updateProgress() {
+  updateProgress(direction = "next") {
     if (!this.config.showProgress) return;
 
     console.log("=== updateProgress called ===");
     console.log("currentStep:", this.currentStep);
     console.log("stepMapping:", this.stepMapping);
+    console.log("Direction passed to updateProgress:", direction);
 
     // Only update the specific steps that need to change, not the entire progress bar
-    this.updateProgressTargeted("next");
+    this.updateProgressTargeted(direction);
   }
 
   updateProgressTargeted(direction = "next") {
@@ -771,7 +772,7 @@ class OptimizedFormHandler {
       this.updateStepStates();
 
       console.log("Calling updateProgress after step increment...");
-      this.updateProgress();
+      this.updateProgress("next");
 
       this.scrollToTop();
 
@@ -817,7 +818,7 @@ class OptimizedFormHandler {
     console.log("currentStep after decrement:", this.currentStep);
 
     console.log("Calling updateProgress...");
-    this.updateProgress();
+    this.updateProgress("back");
 
     console.log("Calling updateStepStates...");
     this.updateStepStates();
