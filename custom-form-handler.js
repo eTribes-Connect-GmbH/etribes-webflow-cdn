@@ -752,15 +752,16 @@ class OptimizedFormHandler {
       console.log("Current HTML index:", currentHtmlIndex);
       console.log("Next HTML index:", nextHtmlIndex);
 
+      // Update progress BEFORE incrementing currentStep
+      console.log("Calling updateProgress before step increment...");
+      this.updateProgress();
+
       // Animate step transition
       await this.transitionToStep(currentStep, nextStep, "next");
 
       this.currentStep++;
       this.isStartingQuiz = false; // Reset flag - user is now moving between steps
       console.log("nextStep: currentStep incremented to:", this.currentStep);
-
-      console.log("Calling updateProgress after step increment...");
-      this.updateProgress();
 
       console.log("Calling updateStepStates after step increment...");
       this.updateStepStates();
