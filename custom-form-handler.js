@@ -596,7 +596,10 @@ class OptimizedFormHandler {
     console.log("Current logical step:", this.currentStep);
 
     if (progressSteps.length) {
+      console.log("=== HTML Structure Debug ===");
       progressSteps.forEach((step, index) => {
+        console.log(`Progress step ${index} HTML:`, step.outerHTML);
+
         // Get the logical step index from the mapping
         const logicalStepIndex = Object.keys(this.stepMapping).find(
           (key) => this.stepMapping[key] === index
