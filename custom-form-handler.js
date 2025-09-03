@@ -592,6 +592,8 @@ class OptimizedFormHandler {
       document.body
     );
     console.log("Found progress steps:", progressSteps.length);
+    console.log("Current step mapping:", this.stepMapping);
+    console.log("Current logical step:", this.currentStep);
 
     if (progressSteps.length) {
       progressSteps.forEach((step, index) => {
@@ -840,8 +842,12 @@ class OptimizedFormHandler {
       this.isStartingQuiz = false; // Reset flag - user is now moving between steps
       console.log("nextStep: currentStep incremented to:", this.currentStep);
 
+      console.log("Calling updateProgress after step increment...");
       this.updateProgress();
+
+      console.log("Calling updateStepStates after step increment...");
       this.updateStepStates();
+
       this.scrollToTop();
 
       // Dispatch step change event
