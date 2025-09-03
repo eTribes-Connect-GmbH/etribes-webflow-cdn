@@ -340,118 +340,6 @@ class OptimizedFormHandler {
     console.log("Ready for progression!");
   }
 
-  updateProgressClasses() {
-    // Update progress classes based on current step
-    const progressSteps = utils.qa(
-      '[if-element="progress-step"]',
-      document.body
-    );
-
-    // Debug: log current step
-    console.log(
-      "updateProgressClasses called with currentStep:",
-      this.currentStep
-    );
-
-    progressSteps.forEach((step, index) => {
-      console.log(
-        `Processing step ${index}: currentStep=${this.currentStep}, index=${index}`
-      );
-
-      if (index < this.currentStep) {
-        // Completed steps - add is-completed to outer div and all children
-        console.log(`Step ${index}: Setting as completed`);
-        step.classList.remove("is-active");
-        step.classList.add("is-completed");
-
-        const progressGraphic = step.querySelector(".quiz_progress-graphic");
-        const progressPoint = step.querySelector(".quiz_progress-point");
-        const progressLine = step.querySelector(".quiz_progress-line");
-        const progressLineFill = step.querySelector(".quiz_progress-line-fill");
-        const progressName = step.querySelector(".quiz_progress-name");
-
-        if (progressGraphic) {
-          progressGraphic.classList.remove("is-active");
-          progressGraphic.classList.add("is-completed");
-        }
-        if (progressPoint) {
-          progressPoint.classList.remove("is-active");
-          progressPoint.classList.add("is-completed");
-        }
-        if (progressLine) {
-          progressLine.classList.remove("is-active");
-          progressLine.classList.add("is-completed");
-        }
-        if (progressLineFill) {
-          progressLineFill.classList.remove("is-active");
-          progressLineFill.classList.add("is-completed");
-        }
-        if (progressName) {
-          progressName.classList.remove("is-active");
-          progressName.classList.add("is-completed");
-        }
-      } else if (index === this.currentStep) {
-        // Current active step - add is-active to outer div and all children
-        console.log(`Step ${index}: Setting as active`);
-        step.classList.remove("is-completed");
-        step.classList.add("is-active");
-
-        const progressGraphic = step.querySelector(".quiz_progress-graphic");
-        const progressPoint = step.querySelector(".quiz_progress-point");
-        const progressLine = step.querySelector(".quiz_progress-line");
-        const progressLineFill = step.querySelector(".quiz_progress-line-fill");
-        const progressName = step.querySelector(".quiz_progress-name");
-
-        if (progressGraphic) {
-          progressGraphic.classList.remove("is-completed");
-          progressGraphic.classList.add("is-active");
-        }
-        if (progressPoint) {
-          progressPoint.classList.remove("is-completed");
-          progressPoint.classList.add("is-active");
-        }
-        if (progressLine) {
-          progressLine.classList.remove("is-completed");
-          progressLine.classList.add("is-active");
-        }
-        if (progressLineFill) {
-          progressLineFill.classList.remove("is-completed");
-          progressLineFill.classList.add("is-active");
-        }
-        if (progressName) {
-          progressName.classList.remove("is-completed");
-          progressName.classList.add("is-active");
-        }
-      } else {
-        // Future steps - remove all classes
-        console.log(`Step ${index}: Removing all classes (future step)`);
-        step.classList.remove("is-active", "is-completed");
-
-        const progressGraphic = step.querySelector(".quiz_progress-graphic");
-        const progressPoint = step.querySelector(".quiz_progress-point");
-        const progressLine = step.querySelector(".quiz_progress-line");
-        const progressLineFill = step.querySelector(".quiz_progress-line-fill");
-        const progressName = step.querySelector(".quiz_progress-name");
-
-        if (progressGraphic) {
-          progressGraphic.classList.remove("is-active", "is-completed");
-        }
-        if (progressPoint) {
-          progressPoint.classList.remove("is-active", "is-completed");
-        }
-        if (progressLine) {
-          progressLine.classList.remove("is-active", "is-completed");
-        }
-        if (progressLineFill) {
-          progressLineFill.classList.remove("is-active", "is-completed");
-        }
-        if (progressName) {
-          progressName.classList.remove("is-active", "is-completed");
-        }
-      }
-    });
-  }
-
   bindValidationEvents() {
     if (this.config.validation === "real-time") {
       utils.addEvent(
@@ -582,10 +470,10 @@ class OptimizedFormHandler {
     console.log("stepMapping:", this.stepMapping);
 
     // Use the unified progress update method (used by both next and back navigation)
-    this.updateProgressUnified();
+    this.updateProgressUnified("next");
   }
 
-  updateProgressUnified() {
+  updateProgressUnified(direction = "next") {
     // Unified method for updating progress - used by both next and back navigation
     const progressSteps = utils.qa(
       '[if-element="progress-step"]',
@@ -594,6 +482,7 @@ class OptimizedFormHandler {
     console.log("Found progress steps:", progressSteps.length);
     console.log("Current step mapping:", this.stepMapping);
     console.log("Current logical step:", this.currentStep);
+    console.log("Direction:", direction);
 
     if (progressSteps.length) {
       console.log("=== HTML Structure Debug ===");
@@ -615,18 +504,36 @@ class OptimizedFormHandler {
             `  Logical index: ${logicalIndex}, currentStep: ${this.currentStep}`
           );
 
-          if (logicalIndex < this.currentStep) {
-            // Completed steps - fade in with completed class
-            console.log(`  Setting step ${index} as COMPLETED`);
-            this.updateProgressStepClasses(step, "completed");
-          } else if (logicalIndex === this.currentStep) {
-            // Current active step - highlight with active class
-            console.log(`  Setting step ${index} as ACTIVE`);
-            this.updateProgressStepClasses(step, "active");
+          if (direction === "next") {
+            // For next navigation: show progress up to current step
+            if (logicalIndex < this.currentStep) {
+              // Completed steps - fade in with completed class
+              console.log(`  Setting step ${index} as COMPLETED`);
+              this.updateProgressStepClasses(step, "completed");
+            } else if (logicalIndex === this.currentStep) {
+              // Current active step - highlight with active class
+              console.log(`  Setting step ${index} as ACTIVE`);
+              this.updateProgressStepClasses(step, "active");
+            } else {
+              // Future steps - fade out and remove classes
+              console.log(`  Setting step ${index} as FUTURE (no classes)`);
+              this.updateProgressStepClasses(step, "future");
+            }
           } else {
-            // Future steps - fade out and remove classes
-            console.log(`  Setting step ${index} as FUTURE (no classes)`);
-            this.updateProgressStepClasses(step, "future");
+            // For back navigation: show progress up to current step (same logic for now)
+            if (logicalIndex < this.currentStep) {
+              // Completed steps - fade in with completed class
+              console.log(`  Setting step ${index} as COMPLETED`);
+              this.updateProgressStepClasses(step, "completed");
+            } else if (logicalIndex === this.currentStep) {
+              // Current active step - highlight with active class
+              console.log(`  Setting step ${index} as ACTIVE`);
+              this.updateProgressStepClasses(step, "active");
+            } else {
+              // Future steps - fade out and remove classes
+              console.log(`  Setting step ${index} as FUTURE (no classes)`);
+              this.updateProgressStepClasses(step, "future");
+            }
           }
         } else {
           // This step is not in our mapping (likely the landing page)
