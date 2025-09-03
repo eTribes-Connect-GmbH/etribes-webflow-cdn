@@ -806,6 +806,11 @@ class OptimizedFormHandler {
     const currentStep = this.steps[currentHtmlIndex];
     const prevStep = this.steps[prevHtmlIndex];
 
+    console.log("Current logical step:", this.currentStep);
+    console.log("Previous logical step:", this.currentStep - 1);
+    console.log("Current HTML index:", currentHtmlIndex);
+    console.log("Previous HTML index:", prevHtmlIndex);
+
     console.log("currentHtmlIndex:", currentHtmlIndex);
     console.log("prevHtmlIndex:", prevHtmlIndex);
     console.log("currentStep element:", currentStep);
