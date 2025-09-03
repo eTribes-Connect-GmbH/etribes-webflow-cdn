@@ -500,7 +500,15 @@ class OptimizedFormHandler {
           console.log(
             `Marking previous step ${previousStepIndex} as completed`
           );
+          console.log(
+            "Previous step element before:",
+            previousProgressStep.outerHTML
+          );
           this.updateProgressStepClasses(previousProgressStep, "completed");
+          console.log(
+            "Previous step element after:",
+            previousProgressStep.outerHTML
+          );
         }
       } else {
         console.log(
@@ -513,8 +521,15 @@ class OptimizedFormHandler {
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
         console.log(`Marking current step ${currentStepIndex} as active`);
-        console.log(`Current step element:`, currentProgressStep);
+        console.log(
+          "Current step element before:",
+          currentProgressStep.outerHTML
+        );
         this.updateProgressStepClasses(currentProgressStep, "active");
+        console.log(
+          "Current step element after:",
+          currentProgressStep.outerHTML
+        );
       } else {
         console.log(
           `ERROR: Could not find progress step for logical index ${currentStepIndex}`
@@ -574,9 +589,11 @@ class OptimizedFormHandler {
 
     switch (state) {
       case "completed":
+        // Mark parent step as completed
         step.classList.add("is-completed");
         step.classList.remove("is-active");
 
+        // Mark ALL child elements as completed
         if (progressGraphic) {
           progressGraphic.classList.remove("is-active");
           progressGraphic.classList.add("is-completed");
@@ -585,7 +602,6 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-active");
           progressPoint.classList.add("is-completed");
         }
-        // Progress lines should also be completed for completed steps
         if (progressLine) {
           progressLine.classList.remove("is-active");
           progressLine.classList.add("is-completed");
@@ -601,9 +617,11 @@ class OptimizedFormHandler {
         break;
 
       case "active":
+        // Mark parent step as active
         step.classList.add("is-active");
         step.classList.remove("is-completed");
 
+        // Mark ALL child elements as active (except progress lines which extend to future)
         if (progressGraphic) {
           progressGraphic.classList.remove("is-completed");
           progressGraphic.classList.add("is-active");
@@ -612,15 +630,11 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-completed");
           progressPoint.classList.add("is-active");
         }
-        // Progress line should NOT be active for current step - it extends to future
+        // Progress lines should have NO classes when step is active (they extend to future)
         if (progressLine) {
-          console.log(`Removing classes from progress line of active step`);
           progressLine.classList.remove("is-active", "is-completed");
         }
         if (progressLineFill) {
-          console.log(
-            `Removing classes from progress line fill of active step`
-          );
           progressLineFill.classList.remove("is-active", "is-completed");
         }
         if (progressName) {
