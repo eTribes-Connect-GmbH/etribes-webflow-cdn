@@ -537,44 +537,44 @@ class OptimizedFormHandler {
         );
       }
     } else if (direction === "back") {
-      // When going back: remove is-active and is-completed from current step
-      const currentStepIndex = this.currentStep;
-      const previousStepIndex = this.currentStep - 1;
+      // When going back: the NEW current step should be active, OLD current step should be inactive
+      const newCurrentStepIndex = this.currentStep; // This is the step we're going TO
+      const oldCurrentStepIndex = this.currentStep + 1; // This is the step we're coming FROM
 
-      // Current step becomes inactive (remove all classes)
-      const currentProgressStep =
-        this.findProgressStepByLogicalIndex(currentStepIndex);
-      if (currentProgressStep) {
+      // Old current step (the one we're leaving) becomes inactive
+      const oldCurrentProgressStep =
+        this.findProgressStepByLogicalIndex(oldCurrentStepIndex);
+      if (oldCurrentProgressStep) {
         console.log(
-          `Marking current step ${currentStepIndex} as inactive (removing all classes)`
+          `Marking old current step ${oldCurrentStepIndex} as inactive (removing all classes)`
         );
         console.log(
-          "Current step element before:",
-          currentProgressStep.outerHTML
+          "Old current step element before:",
+          oldCurrentProgressStep.outerHTML
         );
-        this.updateProgressStepClasses(currentProgressStep, "future");
+        this.updateProgressStepClasses(oldCurrentProgressStep, "future");
         console.log(
-          "Current step element after:",
-          currentProgressStep.outerHTML
+          "Old current step element after:",
+          oldCurrentProgressStep.outerHTML
         );
       }
 
-      // Previous step becomes active
-      if (previousStepIndex >= 0) {
-        const previousProgressStep =
-          this.findProgressStepByLogicalIndex(previousStepIndex);
-        if (previousProgressStep) {
-          console.log(`Marking previous step ${previousStepIndex} as active`);
-          console.log(
-            "Previous step element before:",
-            previousProgressStep.outerHTML
-          );
-          this.updateProgressStepClasses(previousProgressStep, "active");
-          console.log(
-            "Previous step element after:",
-            previousProgressStep.outerHTML
-          );
-        }
+      // New current step (the one we're going to) becomes active
+      const newCurrentProgressStep =
+        this.findProgressStepByLogicalIndex(newCurrentStepIndex);
+      if (newCurrentProgressStep) {
+        console.log(
+          `Marking new current step ${newCurrentStepIndex} as active`
+        );
+        console.log(
+          "New current step element before:",
+          newCurrentProgressStep.outerHTML
+        );
+        this.updateProgressStepClasses(newCurrentProgressStep, "active");
+        console.log(
+          "New current step element after:",
+          newCurrentProgressStep.outerHTML
+        );
       }
     }
   }
