@@ -570,12 +570,14 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-active");
           progressPoint.classList.add("is-completed");
         }
-        // Progress lines should remain light grey for completed steps
+        // Progress lines should also be completed for completed steps
         if (progressLine) {
-          progressLine.classList.remove("is-active", "is-completed");
+          progressLine.classList.remove("is-active");
+          progressLine.classList.add("is-completed");
         }
         if (progressLineFill) {
-          progressLineFill.classList.remove("is-active", "is-completed");
+          progressLineFill.classList.remove("is-active");
+          progressLineFill.classList.add("is-completed");
         }
         if (progressName) {
           progressName.classList.remove("is-active");
