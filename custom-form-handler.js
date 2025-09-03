@@ -570,13 +570,12 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-active");
           progressPoint.classList.add("is-completed");
         }
+        // Progress lines should remain light grey for completed steps
         if (progressLine) {
-          progressLine.classList.remove("is-active");
-          progressLine.classList.add("is-completed");
+          progressLine.classList.remove("is-active", "is-completed");
         }
         if (progressLineFill) {
-          progressLineFill.classList.remove("is-active");
-          progressLineFill.classList.add("is-completed");
+          progressLineFill.classList.remove("is-active", "is-completed");
         }
         if (progressName) {
           progressName.classList.remove("is-active");
@@ -596,6 +595,7 @@ class OptimizedFormHandler {
           progressPoint.classList.remove("is-completed");
           progressPoint.classList.add("is-active");
         }
+        // Progress line should be active for current step
         if (progressLine) {
           progressLine.classList.remove("is-completed");
           progressLine.classList.add("is-active");
