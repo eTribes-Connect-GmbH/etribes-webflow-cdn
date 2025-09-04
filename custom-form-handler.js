@@ -463,6 +463,9 @@ class OptimizedFormHandler {
 
       // Also check the input to make sure it's selected
       input.checked = true;
+
+      // Clear any validation errors for this question since user has made a selection
+      this.clearQuestionValidationErrors(questionName);
     } else {
       // For checkboxes: toggle is-active class
       console.log("Processing checkbox selection");
@@ -489,6 +492,9 @@ class OptimizedFormHandler {
         "Checkbox is-active state:",
         clickedOption.classList.contains("is-active")
       );
+
+      // Clear any validation errors for this question since user has made a selection
+      this.clearQuestionValidationErrors(questionName);
     }
 
     console.log(
@@ -1229,7 +1235,15 @@ class OptimizedFormHandler {
     errorElement.style.cssText =
       "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;";
 
-    field.parentNode.appendChild(errorElement);
+    // For quiz options, show error after the quiz_option-cols container
+    if (field.closest(".quiz_option-cols")) {
+      const quizOptionContainer = field.closest(".quiz_option-cols");
+      quizOptionContainer.appendChild(errorElement);
+    } else {
+      // For regular fields, show error after the field itself
+      field.parentNode.appendChild(errorElement);
+    }
+
     field.classList.add("error");
 
     this.validationErrors.set(field, errorElement);
@@ -1242,6 +1256,40 @@ class OptimizedFormHandler {
       this.validationErrors.delete(field);
     }
     field.classList.remove("error");
+  }
+
+  clearQuestionValidationErrors(questionName) {
+    // Clear validation errors for a specific question (useful for quiz options)
+    console.log(`Clearing validation errors for question: ${questionName}`);
+
+    // Find all fields with this question name
+    const fieldsWithQuestionName = utils.qa(
+      `input[name="${questionName}"]`,
+      this.form
+    );
+
+    fieldsWithQuestionName.forEach((field) => {
+      // Clear the field error class
+      field.classList.remove("error");
+
+      // Remove any validation error elements
+      const errorElement = this.validationErrors.get(field);
+      if (errorElement) {
+        errorElement.remove();
+        this.validationErrors.delete(field);
+      }
+    });
+
+    // Also remove any error elements that might be in the quiz_option-cols container
+    const quizOptionContainer =
+      fieldsWithQuestionName[0]?.closest(".quiz_option-cols");
+    if (quizOptionContainer) {
+      const errorElements =
+        quizOptionContainer.querySelectorAll(".field-error");
+      errorElements.forEach((errorElement) => {
+        errorElement.remove();
+      });
+    }
   }
 
   showStepValidationError() {
