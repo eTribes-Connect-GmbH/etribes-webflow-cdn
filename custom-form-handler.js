@@ -99,10 +99,6 @@ class OptimizedFormHandler {
 
     // Disable HTML5 validation to use custom validation only
     this.form.setAttribute("novalidate", "");
-    this.form.setAttribute("data-validate", "false");
-
-    // Also disable any Webflow/HubSpot validation
-    this.form.setAttribute("data-wf-validate", "false");
 
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
@@ -130,9 +126,6 @@ class OptimizedFormHandler {
 
     // Initialize step states
     this.initializeStepStates(this.steps);
-
-    // Disable validation on all form fields
-    this.disableFieldValidation();
   }
 
   initializeStepStates(steps) {
@@ -159,47 +152,6 @@ class OptimizedFormHandler {
     });
   }
 
-  disableFieldValidation() {
-    // Disable validation on all form fields to prevent default browser/Webflow validation
-    const allFields = this.form.querySelectorAll("input, select, textarea");
-    allFields.forEach((field) => {
-      // Remove required attribute to prevent HTML5 validation
-      field.removeAttribute("required");
-
-      // Add novalidate to individual fields
-      field.setAttribute("novalidate", "");
-
-      // Prevent any default validation
-      field.addEventListener("invalid", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
-
-    // Add CSS to hide any remaining validation messages
-    if (!document.getElementById("hide-validation-css")) {
-      const style = document.createElement("style");
-      style.id = "hide-validation-css";
-      style.textContent = `
-        /* Hide any default browser validation messages */
-        input:invalid, select:invalid, textarea:invalid {
-          box-shadow: none !important;
-        }
-        
-        /* Hide any Webflow validation messages */
-        .w-form-done, .w-form-fail {
-          display: none !important;
-        }
-        
-        /* Hide any HubSpot validation messages */
-        .hs-error-msgs {
-          display: none !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }
-
   bindEvents() {
     // Set up event handling
     this.bindFormEvents();
@@ -213,19 +165,12 @@ class OptimizedFormHandler {
     // Form submission
     utils.addEvent(this.form, "submit", (e) => {
       e.preventDefault();
-      e.stopPropagation();
       this.handleFormSubmit(e.target);
     });
 
     // Input change events
     utils.addEvent(this.form, ["input", "change"], (e) => {
       this.handleInputChange(e.target);
-    });
-
-    // Prevent any default validation on form elements
-    utils.addEvent(this.form, "invalid", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
     });
   }
 
