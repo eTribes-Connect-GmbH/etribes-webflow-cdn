@@ -1557,7 +1557,7 @@ class OptimizedFormHandler {
         { name: "test_question_4", value: data.test_question_4 },
         { name: "firstname", value: data.firstname },
         { name: "lastname", value: data.lastname },
-        { name: "email", value: data.Email },
+        { name: "email", value: data.email },
         { name: "phone", value: data.phone || "" },
         { name: "company", value: data.company },
       ],
