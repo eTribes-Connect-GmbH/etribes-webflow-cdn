@@ -891,9 +891,9 @@ class OptimizedFormHandler {
     }
 
     // Validate current step
-    console.log("Validating current step...");
+    // console.log("Validating current step...");
     const validationResult = this.validateCurrentStep();
-    console.log("Validation result:", validationResult);
+    // console.log("Validation result:", validationResult);
 
     if (validationResult) {
       // Get the actual HTML step indices from the mapping
@@ -1027,23 +1027,23 @@ class OptimizedFormHandler {
   }
 
   validateCurrentStep() {
-    console.log("=== validateCurrentStep called ===");
-    console.log("- this.steps:", this.steps);
-    console.log("- this.currentStep:", this.currentStep);
-    console.log("- this.stepMapping:", this.stepMapping);
+    // console.log("=== validateCurrentStep called ===");
+    // console.log("- this.steps:", this.steps);
+    // console.log("- this.currentStep:", this.currentStep);
+    // console.log("- this.stepMapping:", this.stepMapping);
 
     // Get the actual HTML step index from the mapping
     const htmlStepIndex = this.stepMapping[this.currentStep];
-    console.log("- htmlStepIndex:", htmlStepIndex);
-    console.log(
-      "- this.steps[htmlStepIndex]:",
-      this.steps ? this.steps[htmlStepIndex] : "undefined"
-    );
+    // console.log("- htmlStepIndex:", htmlStepIndex);
+    // console.log(
+    //   "- this.steps[htmlStepIndex]:",
+    //   this.steps ? this.steps[htmlStepIndex] : "undefined"
+    // );
 
     if (!this.steps || !this.steps[htmlStepIndex]) {
-      console.log(
-        "Validation returning true due to missing steps or htmlStepIndex"
-      );
+      // console.log(
+      //   "Validation returning true due to missing steps or htmlStepIndex"
+      // );
       return true;
     }
     const currentStepElement = this.steps[htmlStepIndex];
@@ -1260,7 +1260,7 @@ class OptimizedFormHandler {
 
   clearQuestionValidationErrors(questionName) {
     // Clear validation errors for a specific question (useful for quiz options)
-    console.log(`Clearing validation errors for question: ${questionName}`);
+    // console.log(`Clearing validation errors for question: ${questionName}`);
 
     // Find all fields with this question name
     const fieldsWithQuestionName = utils.qa(
