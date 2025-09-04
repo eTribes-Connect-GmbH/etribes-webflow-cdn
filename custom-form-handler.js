@@ -48,8 +48,6 @@ const utils = {
   },
 };
 
-//<div class="hs-form-frame" data-region="na1" data-form-id="234a7024-bf51-4934-9d74-f331fc420788" data-portal-id="4659131"></div>
-
 // Main Form Handler Class
 class OptimizedFormHandler {
   constructor(config = {}) {
@@ -101,8 +99,8 @@ class OptimizedFormHandler {
 
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
-    console.log("setupForm: Found steps with [if-step] attribute:", this.steps);
-    console.log("setupForm: Steps length:", this.steps.length);
+    // console.log("setupForm: Found steps with [if-step] attribute:", this.steps);
+    // console.log("setupForm: Steps length:", this.steps.length);
 
     this.totalSteps = this.steps.length;
 
@@ -114,42 +112,40 @@ class OptimizedFormHandler {
     for (let i = 0; i < this.totalSteps - 1; i++) {
       this.stepMapping[i] = i + 1; // Skip landing page (index 0)
     }
-    console.log("setupForm: Step mapping created:", this.stepMapping);
+    // console.log("setupForm: Step mapping created:", this.stepMapping);
 
     // Create reverse mapping for progress bar: HTML index -> logical index
     this.progressMapping = {};
     for (let i = 0; i < this.totalSteps - 1; i++) {
       this.progressMapping[i] = i; // HTML index 0 = logical step 0, HTML index 1 = logical step 1, etc.
     }
-    console.log("setupForm: Progress mapping created:", this.progressMapping);
+    // console.log("setupForm: Progress mapping created:", this.progressMapping);
 
     // Initialize step states
     this.initializeStepStates(this.steps);
   }
 
   initializeStepStates(steps) {
-    console.log("initializeStepStates called with steps:", steps);
-    console.log("Steps length:", steps.length);
+    // console.log("initializeStepStates called with steps:", steps);
+    // console.log("Steps length:", steps.length);
 
     steps.forEach((step, index) => {
-      console.log(`Step ${index}:`, step);
-      console.log(`Step ${index} display before:`, step.style.display);
+      // console.log(`Step ${index}:`, step);
+      // console.log(`Step ${index} display before:`, step.style.display);
 
       if (index === 0) {
         // First step (landing page) - show by default
         step.style.display = "block";
         step.classList.add("is-active");
         step.setAttribute("data-if-active", "true");
-        console.log(`Step ${index} (landing page): shown by default`);
+        // console.log(`Step ${index} (landing page): shown by default`);
       } else {
         // All other steps - hide initially
         step.style.display = "none";
         step.classList.remove("is-active");
         step.removeAttribute("data-if-active");
-        console.log(`Step ${index}: hidden initially`);
+        // console.log(`Step ${index}: hidden initially`);
       }
-
-      console.log(`Step ${index} display after:`, step.style.display);
     });
   }
 
@@ -178,12 +174,12 @@ class OptimizedFormHandler {
   bindStepNavigation() {
     // Next step buttons - target specific quiz_next class
     utils.qa(".quiz_next", this.form).forEach((btn) => {
-      console.log(
-        "Binding next step to quiz_next button:",
-        btn.textContent.trim()
-      );
+      // console.log(
+      //   "Binding next step to quiz_next button:",
+      //   btn.textContent.trim()
+      // );
       utils.addEvent(btn, "click", (e) => {
-        console.log("Quiz next button clicked");
+        // console.log("Quiz next button clicked");
         e.preventDefault();
         this.nextStep();
       });
@@ -191,12 +187,12 @@ class OptimizedFormHandler {
 
     // Previous step buttons - target specific quiz_back class
     utils.qa(".quiz_back", this.form).forEach((btn) => {
-      console.log(
-        "Binding previous step to quiz_back button:",
-        btn.textContent.trim()
-      );
+      // console.log(
+      //   "Binding previous step to quiz_back button:",
+      //   btn.textContent.trim()
+      // );
       utils.addEvent(btn, "click", (e) => {
-        console.log("Quiz back button clicked");
+        // console.log("Quiz back button clicked");
         e.preventDefault();
         this.previousStep();
       });
@@ -204,12 +200,12 @@ class OptimizedFormHandler {
 
     // Reset buttons - keep existing attribute-based approach or add specific class if needed
     utils.qa('[if-element="button-reset"]', this.form).forEach((btn) => {
-      console.log(
-        "Binding reset functionality to button:",
-        btn.textContent.trim()
-      );
+      // console.log(
+      //   "Binding reset functionality to button:",
+      //   btn.textContent.trim()
+      // );
       utils.addEvent(btn, "click", (e) => {
-        console.log("Reset button clicked");
+        // console.log("Reset button clicked");
         e.preventDefault();
         this.resetForm();
       });
@@ -217,38 +213,38 @@ class OptimizedFormHandler {
 
     // Start quiz button - target specific start_the_quiz class
     const startButtons = utils.qa(".start_the_quiz", this.form);
-    console.log("Start buttons found:", startButtons.length);
+    // console.log("Start buttons found:", startButtons.length);
 
     startButtons.forEach((btn, index) => {
-      console.log(`Start button ${index}: "${btn.textContent.trim()}"`);
+      // console.log(`Start button ${index}: "${btn.textContent.trim()}"`);
     });
 
     if (startButtons.length > 0) {
       startButtons.forEach((btn) => {
-        console.log(
-          "Binding start functionality to start_the_quiz button:",
-          btn.textContent.trim()
-        );
+        // console.log(
+        //   "Binding start functionality to start_the_quiz button:",
+        //   btn.textContent.trim()
+        // );
         utils.addEvent(btn, "click", (e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log(
-            "Start the quiz button clicked, calling activateFirstProgressNode"
-          );
+          // console.log(
+          //   "Start the quiz button clicked, calling activateFirstProgressNode"
+          // );
           this.activateFirstProgressNode();
         });
       });
     } else {
-      console.log("No start_the_quiz buttons found");
+      // console.log("No start_the_quiz buttons found");
     }
   }
 
   activateFirstProgressNode() {
-    console.log("=== activateFirstProgressNode START ===");
-    console.log("Current state before activation:");
-    console.log("- currentStep:", this.currentStep);
-    console.log("- isStartingQuiz:", this.isStartingQuiz);
-    console.log("- totalSteps:", this.totalSteps);
+    // console.log("=== activateFirstProgressNode START ===");
+    // console.log("Current state before activation:");
+    // console.log("- currentStep:", this.currentStep);
+    // console.log("- isStartingQuiz:", this.isStartingQuiz);
+    // console.log("- totalSteps:", this.totalSteps);
 
     // Find the first progress step and activate it completely
     const firstProgressStep = utils.qa(
@@ -256,7 +252,7 @@ class OptimizedFormHandler {
       document.body
     )[0];
     if (firstProgressStep) {
-      console.log("Found first progress step, removing existing classes");
+      // console.log("Found first progress step, removing existing classes");
 
       // Remove any existing active classes from all progress steps
       utils
@@ -266,7 +262,7 @@ class OptimizedFormHandler {
         });
 
       // Add is-active to the first progress step (parent div)
-      console.log("Adding is-active to first progress step");
+      // console.log("Adding is-active to first progress step");
       firstProgressStep.classList.add("is-active");
 
       // Find and activate all child elements
@@ -295,20 +291,20 @@ class OptimizedFormHandler {
     }
 
     // Show the second step when user starts the quiz (first step is already visible on landing page)
-    console.log("Checking steps array:", this.steps);
-    console.log("Steps length:", this.steps ? this.steps.length : "undefined");
+    // console.log("Checking steps array:", this.steps);
+    // console.log("Steps length:", this.steps ? this.steps.length : "undefined");
 
     if (this.steps && this.steps[1]) {
-      console.log("Second step found, making it visible");
-      console.log("Second step element:", this.steps[1]);
-      console.log("Second step display before:", this.steps[1].style.display);
+      // console.log("Second step found, making it visible");
+      // console.log("Second step element:", this.steps[1]);
+      // console.log("Second step display before:", this.steps[1].style.display);
 
       // Hide the first step (landing page step)
       if (this.steps[0]) {
         this.steps[0].style.display = "none";
         this.steps[0].classList.remove("is-active");
         this.steps[0].removeAttribute("data-if-active");
-        console.log("First step hidden");
+        // console.log("First step hidden");
       }
 
       // Show the second step (first actual quiz step)
@@ -320,33 +316,33 @@ class OptimizedFormHandler {
       this.steps[1].style.visibility = "visible";
       this.steps[1].style.opacity = "1";
 
-      console.log("Second step display after:", this.steps[1].style.display);
-      console.log("Second step classes after:", this.steps[1].className);
-      console.log(
-        "Second step computed display:",
-        window.getComputedStyle(this.steps[1]).display
-      );
-      console.log(
-        "Second step computed visibility:",
-        window.getComputedStyle(this.steps[1]).visibility
-      );
-      console.log(
-        "Second step computed opacity:",
-        window.getComputedStyle(this.steps[1]).opacity
-      );
+      // console.log("Second step display after:", this.steps[1].style.display);
+      // console.log("Second step classes after:", this.steps[1].className);
+      // console.log(
+      //   "Second step computed display:",
+      //   window.getComputedStyle(this.steps[1]).display
+      // );
+      // console.log(
+      //   "Second step computed visibility:",
+      //   window.getnComputedStyle(this.steps[1]).visibility
+      // );
+      // console.log(
+      //   "Second step computed opacity:",
+      //   window.getComputedStyle(this.steps[1]).opacity
+      // );
     } else {
-      console.log("No second step found or steps[1] is undefined");
+      // console.log("No second step found or steps[1] is undefined");
     }
 
     // Set currentStep to 0 (first quiz step) and reset flag to allow progression
     this.currentStep = 0;
     this.isStartingQuiz = false; // Reset flag to allow next step progression
-    console.log("=== activateFirstProgressNode END ===");
-    console.log("Final state after activation:");
-    console.log("- currentStep:", this.currentStep);
-    console.log("- isStartingQuiz:", this.isStartingQuiz);
-    console.log("- totalSteps:", this.totalSteps);
-    console.log("Ready for progression!");
+    // console.log("=== activateFirstProgressNode END ===");
+    // console.log("Final state after activation:");
+    // console.log("- currentStep:", this.currentStep);
+    // console.log("- isStartingQuiz:", this.isStartingQuiz);
+    // console.log("- totalSteps:", this.totalSteps);
+    // console.log("Ready for progression!");
   }
 
   bindValidationEvents() {
@@ -389,47 +385,47 @@ class OptimizedFormHandler {
   }
 
   handleQuizOptionClick(clickedOption) {
-    console.log("=== handleQuizOptionClick called ===");
-    console.log("Clicked option:", clickedOption);
+    // console.log("=== handleQuizOptionClick called ===");
+    // console.log("Clicked option:", clickedOption);
 
     // Find the radio/checkbox input within the clicked option
     const input = clickedOption.querySelector(
       'input[type="radio"], input[type="checkbox"]'
     );
     if (!input) {
-      console.log("No input found in clicked option");
+      // console.log("No input found in clicked option");
       return;
     }
 
     const questionName = input.name;
     const isRadio = input.type === "radio";
 
-    console.log("Input found:", input);
-    console.log("Question name:", questionName);
-    console.log("Is radio:", isRadio);
+    // console.log("Input found:", input);
+    // console.log("Question name:", questionName);
+    // console.log("Is radio:", isRadio);
 
     if (isRadio) {
       // For radio buttons: remove is-active from all options in the same group, then add to clicked option
-      console.log("Processing radio button selection");
+      // console.log("Processing radio button selection");
 
       const allOptionsInGroup = utils.qa(
         `.quiz_option input[name="${questionName}"]`,
         this.form
       );
 
-      console.log("Found options in group:", allOptionsInGroup.length);
+      // console.log("Found options in group:", allOptionsInGroup.length);
 
       allOptionsInGroup.forEach((optionInput, index) => {
         const optionLabel = optionInput.closest(".quiz_option");
         if (optionLabel) {
-          console.log(`Removing is-active from option ${index}:`, optionLabel);
+          // console.log(`Removing is-active from option ${index}:`, optionLabel);
           optionLabel.classList.remove("is-active");
 
           // Also remove classes from the radio input icon
           const radioIcon = optionLabel.querySelector(".w-form-formradioinput");
           if (radioIcon) {
             radioIcon.classList.remove("is-active", "w--redirected-checked");
-            console.log(`Removed classes from radio icon ${index}:`, radioIcon);
+            // console.log(`Removed classes from radio icon ${index}:`, radioIcon);
           }
 
           // Also remove classes from the option label span
@@ -437,30 +433,30 @@ class OptimizedFormHandler {
             optionLabel.querySelector(".quiz_option-label");
           if (optionLabelSpan) {
             optionLabelSpan.classList.remove("is-active");
-            console.log(
-              `Removed is-active from option label span ${index}:`,
-              optionLabelSpan
-            );
+            // console.log(
+            //   `Removed is-active from option label span ${index}:`,
+            //   optionLabelSpan
+            // );
           }
         }
       });
 
       // Add is-active to the clicked option
-      console.log("Adding is-active to clicked option:", clickedOption);
+      // console.log("Adding is-active to clicked option:", clickedOption);
       clickedOption.classList.add("is-active");
 
       // Also add classes to the radio input icon
       const radioIcon = clickedOption.querySelector(".w-form-formradioinput");
       if (radioIcon) {
         radioIcon.classList.add("is-active", "w--redirected-checked");
-        console.log("Added classes to radio icon:", radioIcon);
+        // console.log("Added classes to radio icon:", radioIcon);
       }
 
       // Also add classes to the option label span
       const optionLabelSpan = clickedOption.querySelector(".quiz_option-label");
       if (optionLabelSpan) {
         optionLabelSpan.classList.add("is-active");
-        console.log("Added is-active to option label span:", optionLabelSpan);
+        // console.log("Added is-active to option label span:", optionLabelSpan);
       }
 
       // Also check the input to make sure it's selected
@@ -470,7 +466,7 @@ class OptimizedFormHandler {
       this.clearQuestionValidationErrors(questionName);
     } else {
       // For checkboxes: toggle is-active class
-      console.log("Processing checkbox selection");
+      // console.log("Processing checkbox selection");
       clickedOption.classList.toggle("is-active");
 
       // Also toggle classes on the checkbox icon
@@ -480,34 +476,34 @@ class OptimizedFormHandler {
       if (checkboxIcon) {
         checkboxIcon.classList.toggle("is-active");
         checkboxIcon.classList.toggle("w--redirected-checked");
-        console.log("Toggled classes on checkbox icon:", checkboxIcon);
+        // console.log("Toggled classes on checkbox icon:", checkboxIcon);
       }
 
       // Also toggle classes on the option label span
       const optionLabelSpan = clickedOption.querySelector(".quiz_option-label");
       if (optionLabelSpan) {
         optionLabelSpan.classList.toggle("is-active");
-        console.log("Toggled is-active on option label span:", optionLabelSpan);
+        // console.log("Toggled is-active on option label span:", optionLabelSpan);
       }
 
-      console.log(
-        "Checkbox is-active state:",
-        clickedOption.classList.contains("is-active")
-      );
+      // console.log(
+      //   "Checkbox is-active state:",
+      //   clickedOption.classList.contains("is-active")
+      // );
 
       // Clear any validation errors for this question since user has made a selection
       this.clearQuestionValidationErrors(questionName);
     }
 
-    console.log(
-      `Quiz option clicked: ${input.value}, is-active class ${
-        clickedOption.classList.contains("is-active") ? "added" : "removed"
-      }`
-    );
-    console.log(
-      "Final state - clicked option classes:",
-      clickedOption.className
-    );
+    // console.log(
+    //   `Quiz option clicked: ${input.value}, is-active class ${
+    //     clickedOption.classList.contains("is-active") ? "added" : "removed"
+    //   }`
+    // );
+    // console.log(
+    //   "Final state - clicked option classes:",
+    //   clickedOption.className
+    // );
   }
 
   bindAutoAdvance() {
@@ -620,10 +616,10 @@ class OptimizedFormHandler {
   updateProgress(direction = "next") {
     if (!this.config.showProgress) return;
 
-    console.log("=== updateProgress called ===");
-    console.log("currentStep:", this.currentStep);
-    console.log("stepMapping:", this.stepMapping);
-    console.log("Direction passed to updateProgress:", direction);
+    // console.log("=== updateProgress called ===");
+    // console.log("currentStep:", this.currentStep);
+    // console.log("stepMapping:", this.stepMapping);
+    // console.log("Direction passed to updateProgress:", direction);
 
     // Only update the specific steps that need to change, not the entire progress bar
     this.updateProgressTargeted(direction);
@@ -633,9 +629,9 @@ class OptimizedFormHandler {
     // Simple logic: if is-active and you proceed to next step,
     // now previous step is is-completed and next step is is-active
     // When user clicks back, just reverse it
-    console.log("=== updateProgressTargeted called ===");
-    console.log("Direction:", direction);
-    console.log("Current step:", this.currentStep);
+    // console.log("=== updateProgressTargeted called ===");
+    // console.log("Direction:", direction);
+    // console.log("Current step:", this.currentStep);
 
     if (direction === "next") {
       // Mark previous step as completed, current step as active
@@ -647,43 +643,43 @@ class OptimizedFormHandler {
         const previousProgressStep =
           this.findProgressStepByLogicalIndex(previousStepIndex);
         if (previousProgressStep) {
-          console.log(
-            `Marking previous step ${previousStepIndex} as completed`
-          );
-          console.log(
-            "Previous step element before:",
-            previousProgressStep.outerHTML
-          );
+          // console.log(
+          //   `Marking previous step ${previousStepIndex} as completed`
+          // );
+          // console.log(
+          //   "Previous step element before:",
+          //   previousProgressStep.outerHTML
+          // );
           this.updateProgressStepClasses(previousProgressStep, "completed");
-          console.log(
-            "Previous step element after:",
-            previousProgressStep.outerHTML
-          );
+          // console.log(
+          //   "Previous step element after:",
+          //   previousProgressStep.outerHTML
+          // );
         }
       } else {
-        console.log(
-          `No previous step to mark as completed (currentStep: ${this.currentStep})`
-        );
+        // console.log(
+        //   `No previous step to mark as completed (currentStep: ${this.currentStep})`
+        // );
       }
 
       // Current step becomes active
       const currentProgressStep =
         this.findProgressStepByLogicalIndex(currentStepIndex);
       if (currentProgressStep) {
-        console.log(`Marking current step ${currentStepIndex} as active`);
-        console.log(
-          "Current step element before:",
-          currentProgressStep.outerHTML
-        );
+        // console.log(`Marking current step ${currentStepIndex} as active`);
+        // console.log(
+        //   "Current step element before:",
+        //   currentProgressStep.outerHTML
+        // );
         this.updateProgressStepClasses(currentProgressStep, "active");
-        console.log(
-          "Current step element after:",
-          currentProgressStep.outerHTML
-        );
+        // console.log(
+        //   "Current step element after:",
+        //   currentProgressStep.outerHTML
+        // );
       } else {
-        console.log(
-          `ERROR: Could not find progress step for logical index ${currentStepIndex}`
-        );
+        // console.log(
+        //   `ERROR: Could not find progress step for logical index ${currentStepIndex}`
+        // );
       }
     } else if (direction === "back") {
       // When going back: the NEW current step should be active, OLD current step should be inactive
@@ -694,36 +690,36 @@ class OptimizedFormHandler {
       const oldCurrentProgressStep =
         this.findProgressStepByLogicalIndex(oldCurrentStepIndex);
       if (oldCurrentProgressStep) {
-        console.log(
-          `Marking old current step ${oldCurrentStepIndex} as inactive (removing all classes)`
-        );
-        console.log(
-          "Old current step element before:",
-          oldCurrentProgressStep.outerHTML
-        );
+        // console.log(
+        //   `Marking old current step ${oldCurrentStepIndex} as inactive (removing all classes)`
+        // );
+        // console.log(
+        //   "Old current step element before:",
+        //   oldCurrentProgressStep.outerHTML
+        // );
         this.updateProgressStepClasses(oldCurrentProgressStep, "future");
-        console.log(
-          "Old current step element after:",
-          oldCurrentProgressStep.outerHTML
-        );
+        // console.log(
+        //   "Old current step element after:",
+        //   oldCurrentProgressStep.outerHTML
+        // );
       }
 
       // New current step (the one we're going to) becomes active
       const newCurrentProgressStep =
         this.findProgressStepByLogicalIndex(newCurrentStepIndex);
       if (newCurrentProgressStep) {
-        console.log(
-          `Marking new current step ${newCurrentStepIndex} as active`
-        );
-        console.log(
-          "New current step element before:",
-          newCurrentProgressStep.outerHTML
-        );
+        // console.log(
+        //   `Marking new current step ${newCurrentStepIndex} as active`
+        // );
+        // console.log(
+        //   "New current step element before:",
+        //   newCurrentProgressStep.outerHTML
+        // );
         this.updateProgressStepClasses(newCurrentProgressStep, "active");
-        console.log(
-          "New current step element after:",
-          newCurrentProgressStep.outerHTML
-        );
+        // console.log(
+        //   "New current step element after:",
+        //   newCurrentProgressStep.outerHTML
+        // );
       }
     }
   }
@@ -876,21 +872,21 @@ class OptimizedFormHandler {
   }
 
   async nextStep() {
-    console.log("nextStep called with currentStep:", this.currentStep);
-    console.log("totalSteps:", this.totalSteps);
-    console.log("isStartingQuiz:", this.isStartingQuiz);
+    // console.log("nextStep called with currentStep:", this.currentStep);
+    // console.log("totalSteps:", this.totalSteps);
+    // console.log("isStartingQuiz:", this.isStartingQuiz);
 
     // Prevent nextStep from running when we're starting the quiz
     if (this.isStartingQuiz) {
-      console.log("nextStep blocked - quiz is starting");
+      // console.log("nextStep blocked - quiz is starting");
       return;
     }
 
     if (!this.steps || this.currentStep >= this.totalSteps - 1) {
-      console.log("nextStep blocked - no steps or at last step");
-      console.log("steps:", this.steps);
-      console.log("currentStep:", this.currentStep);
-      console.log("totalSteps:", this.totalSteps);
+      // console.log("nextStep blocked - no steps or at last step");
+      // console.log("steps:", this.steps);
+      // console.log("currentStep:", this.currentStep);
+      // console.log("totalSteps:", this.totalSteps);
       return;
     }
 
@@ -905,22 +901,22 @@ class OptimizedFormHandler {
       const nextHtmlIndex = this.stepMapping[this.currentStep + 1];
       const currentStep = this.steps[currentHtmlIndex];
       const nextStep = this.steps[nextHtmlIndex];
-      console.log("Current step element:", currentStep);
-      console.log("Next step element:", nextStep);
-      console.log("Current HTML index:", currentHtmlIndex);
-      console.log("Next HTML index:", nextHtmlIndex);
+      // console.log("Current step element:", currentStep);
+      // console.log("Next step element:", nextStep);
+      // console.log("Current HTML index:", currentHtmlIndex);
+      // console.log("Next HTML index:", nextHtmlIndex);
 
       // Animate step transition
       await this.transitionToStep(currentStep, nextStep, "next");
 
       this.currentStep++;
       this.isStartingQuiz = false; // Reset flag - user is now moving between steps
-      console.log("nextStep: currentStep incremented to:", this.currentStep);
+      // console.log("nextStep: currentStep incremented to:", this.currentStep);
 
-      console.log("Calling updateStepStates after step increment...");
+      // console.log("Calling updateStepStates after step increment...");
       this.updateStepStates();
 
-      console.log("Calling updateProgress after step increment...");
+      // console.log("Calling updateProgress after step increment...");
       this.updateProgress("next");
 
       this.scrollToTop();
@@ -940,12 +936,12 @@ class OptimizedFormHandler {
   }
 
   async previousStep() {
-    console.log("=== previousStep called ===");
-    console.log("currentStep before:", this.currentStep);
-    console.log("stepMapping:", this.stepMapping);
+    // console.log("=== previousStep called ===");
+    // console.log("currentStep before:", this.currentStep);
+    // console.log("stepMapping:", this.stepMapping);
 
     if (!this.steps || this.currentStep <= 0) {
-      console.log("previousStep blocked - no steps or at first step");
+      // console.log("previousStep blocked - no steps or at first step");
       return;
     }
 
@@ -955,26 +951,26 @@ class OptimizedFormHandler {
     const currentStep = this.steps[currentHtmlIndex];
     const prevStep = this.steps[prevHtmlIndex];
 
-    console.log("Current logical step:", this.currentStep);
-    console.log("Previous logical step:", this.currentStep - 1);
-    console.log("Current HTML index:", currentHtmlIndex);
-    console.log("Previous HTML index:", prevHtmlIndex);
+    //  console.log("Current logical step:", this.currentStep);
+    // console.log("Previous logical step:", this.currentStep - 1);
+    // console.log("Current HTML index:", currentHtmlIndex);
+    // console.log("Previous HTML index:", prevHtmlIndex);
 
-    console.log("currentHtmlIndex:", currentHtmlIndex);
-    console.log("prevHtmlIndex:", prevHtmlIndex);
-    console.log("currentStep element:", currentStep);
-    console.log("prevStep element:", prevStep);
+    // console.log("currentHtmlIndex:", currentHtmlIndex);
+    //    console.log("prevHtmlIndex:", prevHtmlIndex);
+    // console.log("currentStep element:", currentStep);
+    // console.log("prevStep element:", prevStep);
 
     // Animate step transition
     await this.transitionToStep(currentStep, prevStep, "prev");
 
     this.currentStep--;
-    console.log("currentStep after decrement:", this.currentStep);
+    //  console.log("currentStep after decrement:", this.currentStep);
 
-    console.log("Calling updateProgress...");
+    // console.log("Calling updateProgress...");
     this.updateProgress("back");
 
-    console.log("Calling updateStepStates...");
+    //console.log("Calling updateStepStates...");
     this.updateStepStates();
 
     this.scrollToTop();
@@ -1051,7 +1047,7 @@ class OptimizedFormHandler {
       return true;
     }
     const currentStepElement = this.steps[htmlStepIndex];
-    console.log("- currentStepElement:", currentStepElement);
+    //console.log("- currentStepElement:", currentStepElement);
 
     // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
@@ -1066,8 +1062,8 @@ class OptimizedFormHandler {
     );
 
     const allFields = [...fields, ...validationFields];
-    console.log("- Fields found for validation:", allFields.length);
-    console.log("- Fields:", allFields);
+    // console.log("- Fields found for validation:", allFields.length);
+    // console.log("- Fields:", allFields);
 
     let isValid = true;
 
@@ -1496,7 +1492,6 @@ class OptimizedFormHandler {
 
       // Submit to HubSpot
       const result = await this.submitToHubSpot(formData);
-      //const result = { success: true, data: {} };
 
       if (result.success) {
         this.showSuccessMessage(form);
@@ -1651,14 +1646,6 @@ class OptimizedFormHandler {
     errorElement.textContent = message;
   }
 
-  showErrorMessage(form, message) {
-    // Show error message
-    const errorElement =
-      utils.q(".w-form-fail", form) || this.createMessageElement("error");
-    errorElement.style.display = "block";
-    errorElement.textContent = message;
-  }
-
   createMessageElement(type) {
     const element = document.createElement("div");
     element.className = type === "success" ? "w-form-done" : "w-form-fail";
@@ -1709,8 +1696,8 @@ class OptimizedFormHandler {
   }
 
   showStep(stepIndex) {
-    console.log("=== showStep called ===");
-    console.log("Setting currentStep from", this.currentStep, "to", stepIndex);
+    // console.log("=== showStep called ===");
+    // console.log("Setting currentStep from", this.currentStep, "to", stepIndex);
 
     // Show step
     this.currentStep = stepIndex;
