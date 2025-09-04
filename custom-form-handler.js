@@ -1123,9 +1123,9 @@ class OptimizedFormHandler {
     errorElement.setAttribute("if-element", "error");
     errorElement.textContent = message;
 
-    // Apply error styling
+    // Apply error styling with absolute positioning to prevent layout shifts
     errorElement.style.cssText =
-      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; width: 100%;";
+      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;";
 
     // Find the quiz_input-wrap container
     const quizInputWrap = field.closest(".quiz_input-wrap");
@@ -1135,6 +1135,9 @@ class OptimizedFormHandler {
       // This will place it beneath the input, after the quiz_label-wrap
       field.parentNode.insertBefore(errorElement, field.nextSibling);
 
+      // Ensure the container has relative positioning for absolute error positioning
+      field.parentNode.style.position = "relative";
+
       // Add shake effect to the quiz question
       const stepElement = field.closest("[if-step]");
       if (stepElement) {
@@ -1143,6 +1146,8 @@ class OptimizedFormHandler {
     } else if (field.closest(".quiz_option-cols")) {
       // For quiz options, show error after the quiz_option-cols container
       const quizOptionContainer = field.closest(".quiz_option-cols");
+      // Ensure the container has relative positioning for absolute error positioning
+      quizOptionContainer.style.position = "relative";
       quizOptionContainer.appendChild(errorElement);
 
       // Add shake effect to the quiz question
