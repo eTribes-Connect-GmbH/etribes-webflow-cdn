@@ -54,7 +54,7 @@ class OptimizedFormHandler {
     this.config = {
       portalId: "4659131",
       formId: "234a7024-bf51-4934-9d74-f331fc420788",
-      region: config.region || "na1",
+      region: config.region || "eu1",
       multiStep: config.multiStep || true,
       showProgress: config.showProgress || true,
       autoAdvance: config.autoAdvance || false,
@@ -99,6 +99,10 @@ class OptimizedFormHandler {
 
     // Disable HTML5 validation to use custom validation only
     this.form.setAttribute("novalidate", "");
+    this.form.setAttribute("data-validate", "false");
+
+    // Also disable any Webflow/HubSpot validation
+    this.form.setAttribute("data-wf-validate", "false");
 
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
@@ -110,7 +114,7 @@ class OptimizedFormHandler {
     // Create step mapping: logical index -> HTML step index
     // currentStep 0 = first quiz question (HTML index 1)
     // currentStep 1 = second quiz question (HTML index 2)
-    // etc.
+
     this.stepMapping = {};
     for (let i = 0; i < this.totalSteps - 1; i++) {
       this.stepMapping[i] = i + 1; // Skip landing page (index 0)
@@ -126,6 +130,9 @@ class OptimizedFormHandler {
 
     // Initialize step states
     this.initializeStepStates(this.steps);
+
+    // Disable validation on all form fields
+    this.disableFieldValidation();
   }
 
   initializeStepStates(steps) {
@@ -152,6 +159,47 @@ class OptimizedFormHandler {
     });
   }
 
+  disableFieldValidation() {
+    // Disable validation on all form fields to prevent default browser/Webflow validation
+    const allFields = this.form.querySelectorAll("input, select, textarea");
+    allFields.forEach((field) => {
+      // Remove required attribute to prevent HTML5 validation
+      field.removeAttribute("required");
+
+      // Add novalidate to individual fields
+      field.setAttribute("novalidate", "");
+
+      // Prevent any default validation
+      field.addEventListener("invalid", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    // Add CSS to hide any remaining validation messages
+    if (!document.getElementById("hide-validation-css")) {
+      const style = document.createElement("style");
+      style.id = "hide-validation-css";
+      style.textContent = `
+        /* Hide any default browser validation messages */
+        input:invalid, select:invalid, textarea:invalid {
+          box-shadow: none !important;
+        }
+        
+        /* Hide any Webflow validation messages */
+        .w-form-done, .w-form-fail {
+          display: none !important;
+        }
+        
+        /* Hide any HubSpot validation messages */
+        .hs-error-msgs {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
   bindEvents() {
     // Set up event handling
     this.bindFormEvents();
@@ -165,6 +213,7 @@ class OptimizedFormHandler {
     // Form submission
     utils.addEvent(this.form, "submit", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       this.handleFormSubmit(e.target);
     });
 
@@ -172,15 +221,17 @@ class OptimizedFormHandler {
     utils.addEvent(this.form, ["input", "change"], (e) => {
       this.handleInputChange(e.target);
     });
+
+    // Prevent any default validation on form elements
+    utils.addEvent(this.form, "invalid", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
   bindStepNavigation() {
     // Next step buttons - target specific quiz_next class
     utils.qa(".quiz_next", this.form).forEach((btn) => {
-      // console.log(
-      //   "Binding next step to quiz_next button:",
-      //   btn.textContent.trim()
-      // );
       utils.addEvent(btn, "click", (e) => {
         // console.log("Quiz next button clicked");
         e.preventDefault();
@@ -190,10 +241,6 @@ class OptimizedFormHandler {
 
     // Previous step buttons - target specific quiz_back class
     utils.qa(".quiz_back", this.form).forEach((btn) => {
-      // console.log(
-      //   "Binding previous step to quiz_back button:",
-      //   btn.textContent.trim()
-      // );
       utils.addEvent(btn, "click", (e) => {
         // console.log("Quiz back button clicked");
         e.preventDefault();
@@ -203,10 +250,6 @@ class OptimizedFormHandler {
 
     // Reset buttons - keep existing attribute-based approach or add specific class if needed
     utils.qa('[if-element="button-reset"]', this.form).forEach((btn) => {
-      // console.log(
-      //   "Binding reset functionality to button:",
-      //   btn.textContent.trim()
-      // );
       utils.addEvent(btn, "click", (e) => {
         // console.log("Reset button clicked");
         e.preventDefault();
@@ -224,10 +267,6 @@ class OptimizedFormHandler {
 
     if (startButtons.length > 0) {
       startButtons.forEach((btn) => {
-        // console.log(
-        //   "Binding start functionality to start_the_quiz button:",
-        //   btn.textContent.trim()
-        // );
         utils.addEvent(btn, "click", (e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -243,12 +282,6 @@ class OptimizedFormHandler {
   }
 
   activateFirstProgressNode() {
-    // console.log("=== activateFirstProgressNode START ===");
-    // console.log("Current state before activation:");
-    // console.log("- currentStep:", this.currentStep);
-    // console.log("- isStartingQuiz:", this.isStartingQuiz);
-    // console.log("- totalSteps:", this.totalSteps);
-
     // Find the first progress step and activate it completely
     const firstProgressStep = utils.qa(
       '[if-element="progress-step"]',
@@ -294,14 +327,8 @@ class OptimizedFormHandler {
     }
 
     // Show the second step when user starts the quiz (first step is already visible on landing page)
-    // console.log("Checking steps array:", this.steps);
-    // console.log("Steps length:", this.steps ? this.steps.length : "undefined");
 
     if (this.steps && this.steps[1]) {
-      // console.log("Second step found, making it visible");
-      // console.log("Second step element:", this.steps[1]);
-      // console.log("Second step display before:", this.steps[1].style.display);
-
       // Hide the first step (landing page step)
       if (this.steps[0]) {
         this.steps[0].style.display = "none";
@@ -318,21 +345,6 @@ class OptimizedFormHandler {
       // Force the step to be visible and check computed styles
       this.steps[1].style.visibility = "visible";
       this.steps[1].style.opacity = "1";
-
-      // console.log("Second step display after:", this.steps[1].style.display);
-      // console.log("Second step classes after:", this.steps[1].className);
-      // console.log(
-      //   "Second step computed display:",
-      //   window.getComputedStyle(this.steps[1]).display
-      // );
-      // console.log(
-      //   "Second step computed visibility:",
-      //   window.getnComputedStyle(this.steps[1]).visibility
-      // );
-      // console.log(
-      //   "Second step computed opacity:",
-      //   window.getComputedStyle(this.steps[1]).opacity
-      // );
     } else {
       // console.log("No second step found or steps[1] is undefined");
     }
@@ -340,12 +352,6 @@ class OptimizedFormHandler {
     // Set currentStep to 0 (first quiz step) and reset flag to allow progression
     this.currentStep = 0;
     this.isStartingQuiz = false; // Reset flag to allow next step progression
-    // console.log("=== activateFirstProgressNode END ===");
-    // console.log("Final state after activation:");
-    // console.log("- currentStep:", this.currentStep);
-    // console.log("- isStartingQuiz:", this.isStartingQuiz);
-    // console.log("- totalSteps:", this.totalSteps);
-    // console.log("Ready for progression!");
   }
 
   bindValidationEvents() {
@@ -388,9 +394,6 @@ class OptimizedFormHandler {
   }
 
   handleQuizOptionClick(clickedOption) {
-    // console.log("=== handleQuizOptionClick called ===");
-    // console.log("Clicked option:", clickedOption);
-
     // Find the radio/checkbox input within the clicked option
     const input = clickedOption.querySelector(
       'input[type="radio"], input[type="checkbox"]'
@@ -402,10 +405,6 @@ class OptimizedFormHandler {
 
     const questionName = input.name;
     const isRadio = input.type === "radio";
-
-    // console.log("Input found:", input);
-    // console.log("Question name:", questionName);
-    // console.log("Is radio:", isRadio);
 
     if (isRadio) {
       // For radio buttons: remove is-active from all options in the same group, then add to clicked option
@@ -436,10 +435,6 @@ class OptimizedFormHandler {
             optionLabel.querySelector(".quiz_option-label");
           if (optionLabelSpan) {
             optionLabelSpan.classList.remove("is-active");
-            // console.log(
-            //   `Removed is-active from option label span ${index}:`,
-            //   optionLabelSpan
-            // );
           }
         }
       });
@@ -489,24 +484,9 @@ class OptimizedFormHandler {
         // console.log("Toggled is-active on option label span:", optionLabelSpan);
       }
 
-      // console.log(
-      //   "Checkbox is-active state:",
-      //   clickedOption.classList.contains("is-active")
-      // );
-
       // Clear any validation errors for this question since user has made a selection
       this.clearQuestionValidationErrors(questionName);
     }
-
-    // console.log(
-    //   `Quiz option clicked: ${input.value}, is-active class ${
-    //     clickedOption.classList.contains("is-active") ? "added" : "removed"
-    //   }`
-    // );
-    // console.log(
-    //   "Final state - clicked option classes:",
-    //   clickedOption.className
-    // );
   }
 
   bindAutoAdvance() {
@@ -543,12 +523,6 @@ class OptimizedFormHandler {
         step.style.display = "none";
       }
     });
-  }
-
-  createProgressBar() {
-    // Don't create a custom progress bar - use the existing one
-    // The original form already has progress elements with [if-element='progress-step'] and [if-element='progress-bar']
-    return;
   }
 
   initializeProgressSteps() {
@@ -619,11 +593,6 @@ class OptimizedFormHandler {
   updateProgress(direction = "next") {
     if (!this.config.showProgress) return;
 
-    // console.log("=== updateProgress called ===");
-    // console.log("currentStep:", this.currentStep);
-    // console.log("stepMapping:", this.stepMapping);
-    // console.log("Direction passed to updateProgress:", direction);
-
     // Only update the specific steps that need to change, not the entire progress bar
     this.updateProgressTargeted(direction);
   }
@@ -632,9 +601,6 @@ class OptimizedFormHandler {
     // Simple logic: if is-active and you proceed to next step,
     // now previous step is is-completed and next step is is-active
     // When user clicks back, just reverse it
-    // console.log("=== updateProgressTargeted called ===");
-    // console.log("Direction:", direction);
-    // console.log("Current step:", this.currentStep);
 
     if (direction === "next") {
       // Mark previous step as completed, current step as active
@@ -646,18 +612,7 @@ class OptimizedFormHandler {
         const previousProgressStep =
           this.findProgressStepByLogicalIndex(previousStepIndex);
         if (previousProgressStep) {
-          // console.log(
-          //   `Marking previous step ${previousStepIndex} as completed`
-          // );
-          // console.log(
-          //   "Previous step element before:",
-          //   previousProgressStep.outerHTML
-          // );
           this.updateProgressStepClasses(previousProgressStep, "completed");
-          // console.log(
-          //   "Previous step element after:",
-          //   previousProgressStep.outerHTML
-          // );
         }
       } else {
         // console.log(
@@ -1149,15 +1104,6 @@ class OptimizedFormHandler {
             value > (field.max || Infinity)
           ) {
             this.showFieldError(field, "Please enter a valid number");
-            return false;
-          }
-          break;
-
-        case "url":
-          try {
-            new URL(value);
-          } catch {
-            this.showFieldError(field, "Please enter a valid URL");
             return false;
           }
           break;
