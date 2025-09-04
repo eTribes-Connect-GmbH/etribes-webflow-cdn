@@ -1231,13 +1231,15 @@ class OptimizedFormHandler {
     errorElement.setAttribute("if-element", "error");
     errorElement.textContent = message;
 
-    // Apply error styling
+    // Apply error styling with absolute positioning to prevent layout shifts
     errorElement.style.cssText =
-      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem;";
+      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;";
 
     // For quiz options, show error after the quiz_option-cols container
     if (field.closest(".quiz_option-cols")) {
       const quizOptionContainer = field.closest(".quiz_option-cols");
+      // Ensure the container has relative positioning for absolute error positioning
+      quizOptionContainer.style.position = "relative";
       quizOptionContainer.appendChild(errorElement);
     } else {
       // For regular fields, show error after the field itself
