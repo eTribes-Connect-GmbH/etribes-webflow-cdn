@@ -48,12 +48,14 @@ const utils = {
   },
 };
 
+//<div class="hs-form-frame" data-region="na1" data-form-id="234a7024-bf51-4934-9d74-f331fc420788" data-portal-id="4659131"></div>
+
 // Main Form Handler Class
 class OptimizedFormHandler {
   constructor(config = {}) {
     this.config = {
-      portalId: config.portalId || "",
-      formId: config.formId || "",
+      portalId: "4659131",
+      formId: "234a7024-bf51-4934-9d74-f331fc420788",
       region: config.region || "na1",
       multiStep: config.multiStep || true,
       showProgress: config.showProgress || true,
@@ -1493,8 +1495,8 @@ class OptimizedFormHandler {
       const formData = this.collectFormData(form);
 
       // Submit to HubSpot
-      // const result = await this.submitToHubSpot(formData);
-      const result = { success: true, data: {} };
+      const result = await this.submitToHubSpot(formData);
+      //const result = { success: true, data: {} };
 
       if (result.success) {
         this.showSuccessMessage(form);
@@ -1540,53 +1542,53 @@ class OptimizedFormHandler {
   }
 
   async submitToHubSpot(data) {
-    // Submit to HubSpot
-    const url = `https://api.hsforms.com/submissions/v3/integration/submit/${this.config.portalId}/${this.config.formId}`;
+    // Submit to HubSpot using public endpoint (no API key needed)
+    const url = `https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/${this.config.portalId}/${this.config.formId}`;
 
-    const payload = {
-      fields: this.formatHubSpotFields(data),
-      context: {
-        pageUri: window.location.href,
-        pageName: document.title,
-      },
-    };
+    console.log("Submitting to HubSpot:", url);
+    console.log("Form data:", data);
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      // Create a temporary form and submit directly to HubSpot
+      const tempForm = document.createElement("form");
+      tempForm.method = "POST";
+      tempForm.action = url;
+      tempForm.target = "_blank"; // Submit in new tab/window
+      tempForm.style.display = "none";
+
+      // Add your specific form data as hidden fields
+      const fields = [
+        { name: "test_question_1", value: data.test_question_1 },
+        { name: "test_question_2", value: data.test_question_2 },
+        { name: "test_question_3", value: data.test_question_3 },
+        { name: "test_question_4", value: data.test_question_4 },
+        { name: "firstname", value: data.firstname },
+        { name: "lastname", value: data.lastname },
+        { name: "email", value: data.Email },
+        { name: "phone", value: data.phone || "" },
+        { name: "company", value: data.company },
+      ];
+
+      fields.forEach(({ name, value }) => {
+        const hiddenField = document.createElement("input");
+        hiddenField.type = "hidden";
+        hiddenField.name = name;
+        hiddenField.value = value;
+        tempForm.appendChild(hiddenField);
+        console.log(`Added field: ${name} = ${value}`);
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      // Submit the form
+      document.body.appendChild(tempForm);
+      tempForm.submit();
+      document.body.removeChild(tempForm);
 
-      const result = await response.json();
-      return { success: true, data: result };
+      console.log("Form submitted to HubSpot successfully!");
+      return { success: true, message: "Form submitted successfully!" };
     } catch (error) {
+      console.error("Error submitting to HubSpot:", error);
       return { success: false, error: error.message };
     }
-  }
-
-  formatHubSpotFields(data) {
-    const fields = [];
-
-    for (const [key, value] of Object.entries(data)) {
-      if (key.startsWith("_")) continue;
-
-      if (Array.isArray(value)) {
-        value.forEach((val) => {
-          fields.push({ name: key, value: val });
-        });
-      } else {
-        fields.push({ name: key, value: value });
-      }
-    }
-
-    return fields;
   }
 
   showLoadingState(form) {
@@ -1635,9 +1637,14 @@ class OptimizedFormHandler {
       utils.q(".w-form-fail", form) || this.createMessageElement("error");
     errorElement.style.display = "block";
     errorElement.textContent = message;
+  }
 
-    form.style.display = "block";
-    errorElement.scrollIntoView({ behavior: "smooth" });
+  showErrorMessage(form, message) {
+    // Show error message
+    const errorElement =
+      utils.q(".w-form-fail", form) || this.createMessageElement("error");
+    errorElement.style.display = "block";
+    errorElement.textContent = message;
   }
 
   createMessageElement(type) {
