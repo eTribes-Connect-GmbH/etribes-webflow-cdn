@@ -1551,10 +1551,22 @@ class OptimizedFormHandler {
     // Prepare data in HubSpot's expected format
     const payload = {
       fields: [
-        { name: "test_question_1", value: data.test_question_1 },
-        { name: "test_question_2", value: data.test_question_2 },
-        { name: "test_question_3", value: data.test_question_3 },
-        { name: "test_question_4", value: data.test_question_4 },
+        {
+          name: "FEEDBACK_SUBMISSION.test_question_1",
+          value: data.test_question_1,
+        },
+        {
+          name: "FEEDBACK_SUBMISSION.test_question_2",
+          value: data.test_question_2,
+        },
+        {
+          name: "FEEDBACK_SUBMISSION.test_question_3",
+          value: data.test_question_3,
+        },
+        {
+          name: "FEEDBACK_SUBMISSION.test_question_4",
+          value: data.test_question_4,
+        },
         { name: "firstname", value: data.firstname },
         { name: "lastname", value: data.lastname },
         { name: "email", value: data.email },
