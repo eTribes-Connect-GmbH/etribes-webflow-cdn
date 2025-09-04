@@ -23,7 +23,7 @@ const utils = {
   },
 
   // Validation utilities
-  isValidEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+  isValidEmail: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email),
   isValidPhone: (phone) =>
     /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, "")),
 
@@ -96,6 +96,9 @@ class OptimizedFormHandler {
     this.form.setAttribute("data-portal-id", this.config.portalId);
     this.form.setAttribute("data-form-id", this.config.formId);
     this.form.setAttribute("data-region", this.config.region);
+
+    // Disable HTML5 validation to use custom validation only
+    this.form.setAttribute("novalidate", "");
 
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
@@ -1109,8 +1112,8 @@ class OptimizedFormHandler {
     // Required field validation
     if (isRequired && !value) {
       const fieldName =
-        field.getAttribute("placeholder") ||
         field.getAttribute("name") ||
+        field.getAttribute("placeholder") ||
         "This field";
       this.showFieldError(field, `${fieldName} is required`);
       return false;
@@ -1229,16 +1232,33 @@ class OptimizedFormHandler {
     errorElement.setAttribute("if-element", "error");
     errorElement.textContent = message;
 
-    // Apply error styling with absolute positioning to prevent layout shifts
+    // Apply error styling
     errorElement.style.cssText =
-      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;";
+      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; width: 100%;";
 
-    // For quiz options, show error after the quiz_option-cols container
-    if (field.closest(".quiz_option-cols")) {
+    // Find the quiz_input-wrap container
+    const quizInputWrap = field.closest(".quiz_input-wrap");
+
+    if (quizInputWrap) {
+      // For quiz form fields, insert error after the input field
+      // This will place it beneath the input, after the quiz_label-wrap
+      field.parentNode.insertBefore(errorElement, field.nextSibling);
+
+      // Add shake effect to the quiz question
+      const stepElement = field.closest("[if-step]");
+      if (stepElement) {
+        this.shakeStep(stepElement);
+      }
+    } else if (field.closest(".quiz_option-cols")) {
+      // For quiz options, show error after the quiz_option-cols container
       const quizOptionContainer = field.closest(".quiz_option-cols");
-      // Ensure the container has relative positioning for absolute error positioning
-      quizOptionContainer.style.position = "relative";
       quizOptionContainer.appendChild(errorElement);
+
+      // Add shake effect to the quiz question
+      const stepElement = field.closest("[if-step]");
+      if (stepElement) {
+        this.shakeStep(stepElement);
+      }
     } else {
       // For regular fields, show error after the field itself
       field.parentNode.appendChild(errorElement);
