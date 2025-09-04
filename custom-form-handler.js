@@ -1542,22 +1542,15 @@ class OptimizedFormHandler {
   }
 
   async submitToHubSpot(data) {
-    // Submit to HubSpot using public endpoint (no API key needed)
-    const url = `https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/${this.config.portalId}/${this.config.formId}`;
+    // Use the correct HubSpot API endpoint that supports JSON
+    const url = `https://api.hsforms.com/submissions/v3/integration/submit/${this.config.portalId}/${this.config.formId}`;
 
     console.log("Submitting to HubSpot:", url);
     console.log("Form data:", data);
 
-    try {
-      // Create a temporary form and submit directly to HubSpot
-      const tempForm = document.createElement("form");
-      tempForm.method = "POST";
-      tempForm.action = url;
-      tempForm.target = "_blank"; // Submit in new tab/window
-      tempForm.style.display = "none";
-
-      // Add your specific form data as hidden fields
-      const fields = [
+    // Prepare data in HubSpot's expected format
+    const payload = {
+      fields: [
         { name: "test_question_1", value: data.test_question_1 },
         { name: "test_question_2", value: data.test_question_2 },
         { name: "test_question_3", value: data.test_question_3 },
@@ -1567,24 +1560,31 @@ class OptimizedFormHandler {
         { name: "email", value: data.Email },
         { name: "phone", value: data.phone || "" },
         { name: "company", value: data.company },
-      ];
+      ],
+      context: {
+        pageUri: window.location.href,
+        pageName: document.title,
+      },
+    };
 
-      fields.forEach(({ name, value }) => {
-        const hiddenField = document.createElement("input");
-        hiddenField.type = "hidden";
-        hiddenField.name = name;
-        hiddenField.value = value;
-        tempForm.appendChild(hiddenField);
-        console.log(`Added field: ${name} = ${value}`);
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      // Submit the form
-      document.body.appendChild(tempForm);
-      tempForm.submit();
-      document.body.removeChild(tempForm);
-
-      console.log("Form submitted to HubSpot successfully!");
-      return { success: true, message: "Form submitted successfully!" };
+      if (response.ok) {
+        console.log("Successfully submitted to HubSpot!");
+        return { success: true, message: "Form submitted successfully!" };
+      } else {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP ${response.status}: ${response.statusText} - ${errorText}`
+        );
+      }
     } catch (error) {
       console.error("Error submitting to HubSpot:", error);
       return { success: false, error: error.message };
