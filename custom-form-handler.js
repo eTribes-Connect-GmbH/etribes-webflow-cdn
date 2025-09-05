@@ -225,12 +225,21 @@ class OptimizedFormHandler {
       // console.log(`Step ${index}:`, step);
       // console.log(`Step ${index} display before:`, step.style.display);
 
+      // Check if this is the Report step
+      const stepName = step.getAttribute("if-step");
+
       if (index === 0) {
         // First step (landing page) - show by default
         step.style.display = "block";
         step.classList.add("is-active");
         step.setAttribute("data-if-active", "true");
         // console.log(`Step ${index} (landing page): shown by default`);
+      } else if (stepName === "Report") {
+        // Report step - hide initially, will be shown after successful submission
+        step.style.display = "none";
+        step.classList.remove("is-active");
+        step.removeAttribute("data-if-active");
+        console.log("Report step hidden initially");
       } else {
         // All other steps - hide initially
         step.style.display = "none";
@@ -1913,8 +1922,32 @@ class OptimizedFormHandler {
       utils.q(".w-form-done", form) || this.createMessageElement("success");
     successElement.style.display = "block";
 
-    form.style.display = "none";
+    // Show the report step (keep form visible)
+    this.showReportStep();
+
     successElement.scrollIntoView({ behavior: "smooth" });
+  }
+
+  showReportStep() {
+    // Find the Report step div
+    const reportStep = utils.q('[if-step="Report"]', document.body);
+    if (reportStep) {
+      console.log("Showing report step after successful submission");
+
+      // Set display block on the report step
+      reportStep.style.display = "block";
+
+      // Find the quiz_report div inside and set display block
+      const quizReport = reportStep.querySelector(".quiz_report");
+      if (quizReport) {
+        quizReport.style.display = "block";
+        console.log("Quiz report div displayed");
+      }
+
+      console.log("Report step displayed successfully");
+    } else {
+      console.log("Report step not found");
+    }
   }
 
   showErrorMessage(form, message) {
