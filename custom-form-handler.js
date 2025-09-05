@@ -138,43 +138,53 @@ class OptimizedFormHandler {
       // Find all form inputs within the Contact details step
       const inputs = utils.qa("input, select, textarea", contactStep);
 
-      // Remove HTML5 validation attributes from inputs in this step
-      inputs.forEach((input) => {
-        // Store original required state before removing it
-        const wasRequired = input.hasAttribute("required");
+      // Disable validation on Contact details step fields only
+      inputs.forEach((field) => {
+        // Remove required attribute to prevent HTML5 validation
+        field.removeAttribute("required");
 
-        // Remove validation attributes that trigger browser validation
-        input.removeAttribute("required");
-        input.removeAttribute("pattern");
-        input.removeAttribute("minlength");
-        input.removeAttribute("maxlength");
-        input.removeAttribute("min");
-        input.removeAttribute("max");
+        // Add novalidate to individual fields
+        field.setAttribute("novalidate", "");
+
+        // Prevent any default validation
+        field.addEventListener("invalid", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
 
         // Add a custom attribute to track that this field should use custom validation
-        input.setAttribute("data-custom-validation", "true");
-
-        // If the field was originally required, mark it as required for custom validation
-        if (wasRequired) {
-          input.setAttribute("data-custom-required", "true");
-        }
+        field.setAttribute("data-custom-validation", "true");
       });
 
       console.log(
         `Disabled HTML5 validation for ${inputs.length} fields in Contact details step`
       );
 
-      // Debug: Log which fields were marked as required
-      const requiredFields = inputs.filter((input) =>
-        input.hasAttribute("data-custom-required")
-      );
-      console.log(
-        `Marked ${requiredFields.length} fields as custom required:`,
-        requiredFields.map((field) => ({
-          name: field.name || field.id,
-          type: field.type,
-        }))
-      );
+      // Add CSS to hide any remaining validation messages for Contact details step only
+      if (!document.getElementById("hide-contact-validation-css")) {
+        const style = document.createElement("style");
+        style.id = "hide-contact-validation-css";
+        style.textContent = `
+          /* Hide any default browser validation messages for Contact details step only */
+          [if-step="Contact details"] input:invalid, 
+          [if-step="Contact details"] select:invalid, 
+          [if-step="Contact details"] textarea:invalid {
+            box-shadow: none !important;
+          }
+          
+          /* Hide any Webflow validation messages in Contact details step */
+          [if-step="Contact details"] .w-form-done, 
+          [if-step="Contact details"] .w-form-fail {
+            display: none !important;
+          }
+          
+          /* Hide any HubSpot validation messages in Contact details step */
+          [if-step="Contact details"] .hs-error-msgs {
+            display: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     }
   }
 
@@ -1004,7 +1014,7 @@ class OptimizedFormHandler {
 
     // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
-      "input[data-if-has-validation], select[data-if-has-validation], textarea[data-if-has-validation], input[required], select[required], textarea[required], input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation], input[data-custom-required], select[data-custom-required], textarea[data-custom-required]",
+      "input[data-if-has-validation], select[data-if-has-validation], textarea[data-if-has-validation], input[required], select[required], textarea[required], input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation]",
       currentStepElement
     );
 
@@ -1042,15 +1052,88 @@ class OptimizedFormHandler {
     return isValid;
   }
 
+  validateContactDetailsStep() {
+    // Find the Contact details step directly
+    const contactStep = utils.q('[if-step="Contact details"]', this.form);
+    if (!contactStep) {
+      console.log("Contact details step not found");
+      return true; // If step doesn't exist, consider it valid
+    }
+
+    console.log("Validating Contact details step...");
+
+    // Find all fields with custom validation in this step
+    const fields = utils.qa(
+      "input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation]",
+      contactStep
+    );
+
+    console.log(
+      `Found ${fields.length} fields to validate in Contact details step`
+    );
+
+    let isValid = true;
+    let hasErrors = false;
+
+    fields.forEach((field) => {
+      if (!this.validateField(field)) {
+        isValid = false;
+        hasErrors = true;
+      }
+    });
+
+    if (hasErrors) {
+      console.log("Contact details step has validation errors");
+      // Show the Contact details step and scroll to it
+      this.showContactDetailsStep();
+    } else {
+      console.log("Contact details step validation passed");
+    }
+
+    return isValid;
+  }
+
+  showContactDetailsStep() {
+    // Find and show the Contact details step
+    const contactStep = utils.q('[if-step="Contact details"]', this.form);
+    if (contactStep) {
+      // Hide all other steps
+      this.steps.forEach((step) => {
+        step.style.display = "none";
+        step.classList.remove("is-active");
+        step.removeAttribute("data-if-active");
+      });
+
+      // Show the Contact details step
+      contactStep.style.display = "block";
+      contactStep.classList.add("is-active");
+      contactStep.setAttribute("data-if-active", "true");
+
+      // Scroll to the step
+      contactStep.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // Show a general error message
+      this.showStepValidationError();
+    }
+  }
+
   validateField(field) {
     const value = field.value.trim();
     const isRequired =
       field.hasAttribute("required") ||
       field.hasAttribute("data-if-has-validation") ||
-      field.hasAttribute("data-custom-validation") ||
-      field.hasAttribute("data-custom-required");
+      field.hasAttribute("data-custom-validation");
     const type = field.type;
     const tagName = field.tagName.toLowerCase();
+
+    // Debug logging for Contact details step fields
+    if (field.hasAttribute("data-custom-validation")) {
+      console.log(
+        `Validating field: ${
+          field.name || field.id
+        }, value: "${value}", isRequired: ${isRequired}`
+      );
+    }
 
     // Check if field should be validated based on InputFlow attributes
     const shouldValidate = this.shouldValidateField(field);
@@ -1311,11 +1394,6 @@ class OptimizedFormHandler {
       return true;
     }
 
-    // Check if field has custom required attribute (for Contact details step)
-    if (field.hasAttribute("data-custom-required")) {
-      return true;
-    }
-
     // Check if field is in a step that requires validation
     const stepElement = field.closest("[if-step]");
     if (stepElement) {
@@ -1330,7 +1408,7 @@ class OptimizedFormHandler {
     return (
       field.value.trim() !== "" ||
       field.hasAttribute("required") ||
-      field.hasAttribute("data-custom-required")
+      field.hasAttribute("data-custom-validation")
     );
   }
 
@@ -1454,6 +1532,13 @@ class OptimizedFormHandler {
 
     // Validate form submission
     if (this.config.multiStep) {
+      // First, validate the Contact details step specifically
+      if (!this.validateContactDetailsStep()) {
+        console.log("Contact details step validation failed");
+        return;
+      }
+
+      // Then validate all other steps using the existing logic
       for (let i = 0; i < this.totalSteps; i++) {
         this.currentStep = i;
         if (!this.validateCurrentStep()) {
