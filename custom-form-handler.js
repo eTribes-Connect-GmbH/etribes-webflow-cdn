@@ -97,8 +97,8 @@ class OptimizedFormHandler {
     this.form.setAttribute("data-form-id", this.config.formId);
     this.form.setAttribute("data-region", this.config.region);
 
-    // Disable HTML5 validation to use custom validation only
-    this.form.setAttribute("novalidate", "");
+    // Keep HTML5 validation enabled for the entire form
+    // We'll disable it only for Contact details step fields
 
     // Disable HTML5 validation specifically for Contact details step
     this.disableHTML5ValidationForContactStep();
@@ -134,57 +134,86 @@ class OptimizedFormHandler {
   disableHTML5ValidationForContactStep() {
     // Find the Contact details step
     const contactStep = utils.q('[if-step="Contact details"]', this.form);
-    if (contactStep) {
-      // Find all form inputs within the Contact details step
-      const inputs = utils.qa("input, select, textarea", contactStep);
+    if (!contactStep) {
+      console.log("Contact details step not found during setup");
+      return;
+    }
 
-      // Disable validation on Contact details step fields only
-      inputs.forEach((field) => {
-        // Remove required attribute to prevent HTML5 validation
-        field.removeAttribute("required");
+    console.log("Found Contact details step, processing fields...");
 
-        // Add novalidate to individual fields
-        field.setAttribute("novalidate", "");
+    // Disable validation for the Contact details step container
+    contactStep.setAttribute("data-validate", "false");
+    contactStep.setAttribute("data-wf-validate", "false");
+    contactStep.setAttribute("data-hs-validate", "false");
+    contactStep.setAttribute("data-hubspot-validate", "false");
 
-        // Prevent any default validation
-        field.addEventListener("invalid", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
+    // Find all form inputs within the Contact details step
+    const inputs = utils.qa("input, select, textarea", contactStep);
+    console.log(`Found ${inputs.length} input fields in Contact details step`);
 
-        // Add a custom attribute to track that this field should use custom validation
-        field.setAttribute("data-custom-validation", "true");
+    // Disable validation on Contact details step fields only
+    inputs.forEach((field, index) => {
+      const wasRequired = field.hasAttribute("required");
+
+      // Remove required attribute to prevent HTML5 validation
+      field.removeAttribute("required");
+
+      // Add novalidate to individual fields
+      field.setAttribute("novalidate", "");
+
+      // Prevent any default validation
+      field.addEventListener("invalid", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
       });
 
-      console.log(
-        `Disabled HTML5 validation for ${inputs.length} fields in Contact details step`
-      );
+      // Add a custom attribute to track that this field should use custom validation
+      field.setAttribute("data-custom-validation", "true");
 
-      // Add CSS to hide any remaining validation messages for Contact details step only
-      if (!document.getElementById("hide-contact-validation-css")) {
-        const style = document.createElement("style");
-        style.id = "hide-contact-validation-css";
-        style.textContent = `
-          /* Hide any default browser validation messages for Contact details step only */
-          [if-step="Contact details"] input:invalid, 
-          [if-step="Contact details"] select:invalid, 
-          [if-step="Contact details"] textarea:invalid {
-            box-shadow: none !important;
-          }
-          
-          /* Hide any Webflow validation messages in Contact details step */
-          [if-step="Contact details"] .w-form-done, 
-          [if-step="Contact details"] .w-form-fail {
-            display: none !important;
-          }
-          
-          /* Hide any HubSpot validation messages in Contact details step */
-          [if-step="Contact details"] .hs-error-msgs {
-            display: none !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
+      console.log(
+        `Field ${index + 1}: ${field.name || field.id} (${
+          field.type
+        }) - wasRequired: ${wasRequired}, now has data-custom-validation`
+      );
+    });
+
+    console.log(
+      `Disabled HTML5 validation for ${inputs.length} fields in Contact details step`
+    );
+
+    console.log("Disabled validation systems for Contact details step:", {
+      stepDataValidate: contactStep.getAttribute("data-validate"),
+      stepDataWfValidate: contactStep.getAttribute("data-wf-validate"),
+      stepDataHsValidate: contactStep.getAttribute("data-hs-validate"),
+      stepDataHubspotValidate: contactStep.getAttribute(
+        "data-hubspot-validate"
+      ),
+    });
+
+    // Add CSS to hide any remaining validation messages for Contact details step only
+    if (!document.getElementById("hide-contact-validation-css")) {
+      const style = document.createElement("style");
+      style.id = "hide-contact-validation-css";
+      style.textContent = `
+        /* Hide any default browser validation messages for Contact details step only */
+        [if-step="Contact details"] input:invalid, 
+        [if-step="Contact details"] select:invalid, 
+        [if-step="Contact details"] textarea:invalid {
+          box-shadow: none !important;
+        }
+        
+        /* Hide any Webflow validation messages in Contact details step */
+        [if-step="Contact details"] .w-form-done, 
+        [if-step="Contact details"] .w-form-fail {
+          display: none !important;
+        }
+        
+        /* Hide any HubSpot validation messages in Contact details step */
+        [if-step="Contact details"] .hs-error-msgs {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
   }
 
@@ -1072,22 +1101,68 @@ class OptimizedFormHandler {
       `Found ${fields.length} fields to validate in Contact details step`
     );
 
+    // If no fields found, let's check what fields exist in the step
+    if (fields.length === 0) {
+      const allFields = utils.qa("input, select, textarea", contactStep);
+      console.log(
+        `No custom validation fields found. All fields in step:`,
+        allFields.map((f) => ({
+          name: f.name,
+          type: f.type,
+          hasCustomValidation: f.hasAttribute("data-custom-validation"),
+        }))
+      );
+
+      // Fallback: validate all fields in Contact details step as required
+      console.log(
+        "Using fallback validation - treating all fields as required"
+      );
+      let isValid = true;
+      allFields.forEach((field) => {
+        if (!field.value || field.value.trim() === "") {
+          console.log(`Empty required field found: ${field.name || field.id}`);
+          isValid = false;
+          this.showFieldError(
+            field,
+            `${field.name || field.placeholder || "This field"} is required`
+          );
+        }
+      });
+
+      if (!isValid) {
+        console.log(
+          "Contact details step has empty required fields - BLOCKING SUBMISSION"
+        );
+        this.showContactDetailsStep();
+      }
+
+      return isValid;
+    }
+
     let isValid = true;
     let hasErrors = false;
 
     fields.forEach((field) => {
+      console.log(
+        `Validating field: ${field.name || field.id}, value: "${field.value}"`
+      );
       if (!this.validateField(field)) {
         isValid = false;
         hasErrors = true;
+        console.log(`Field validation failed: ${field.name || field.id}`);
       }
     });
 
     if (hasErrors) {
-      console.log("Contact details step has validation errors");
+      console.log(
+        "Contact details step has validation errors - BLOCKING SUBMISSION"
+      );
       // Show the Contact details step and scroll to it
       this.showContactDetailsStep();
     } else {
-      console.log("Contact details step validation passed");
+      console.log(
+        "Contact details step validation passed - ALLOWING SUBMISSION"
+      );
     }
 
     return isValid;
@@ -1528,15 +1603,27 @@ class OptimizedFormHandler {
   }
 
   async handleFormSubmit(form) {
-    if (this.isSubmitting) return;
+    console.log("=== FORM SUBMISSION ATTEMPTED ===");
+    if (this.isSubmitting) {
+      console.log("Form is already submitting, blocking");
+      return;
+    }
 
     // Validate form submission
     if (this.config.multiStep) {
+      console.log(
+        "Multi-step form detected, validating Contact details step first..."
+      );
       // First, validate the Contact details step specifically
       if (!this.validateContactDetailsStep()) {
-        console.log("Contact details step validation failed");
+        console.log(
+          "Contact details step validation failed - BLOCKING SUBMISSION"
+        );
         return;
       }
+      console.log(
+        "Contact details step validation passed, continuing with other steps..."
+      );
 
       // Then validate all other steps using the existing logic
       for (let i = 0; i < this.totalSteps; i++) {
