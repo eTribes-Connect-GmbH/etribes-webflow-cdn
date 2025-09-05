@@ -147,7 +147,7 @@ class OptimizedFormHandler {
     contactStep.setAttribute("data-hs-validate", "false");
     contactStep.setAttribute("data-hubspot-validate", "false");
 
-    // Find all form inputs within the Contact details step
+    // Find all form inputs within the Contact details step (including checkboxes)
     const inputs = utils.qa("input, select, textarea", contactStep);
     console.log(`Found ${inputs.length} input fields in Contact details step`);
 
@@ -278,6 +278,16 @@ class OptimizedFormHandler {
     // Input change events
     utils.addEvent(this.form, ["input", "change"], (e) => {
       this.handleInputChange(e.target);
+
+      // Clear validation errors for checkboxes when they're checked
+      if (
+        e.target.type === "checkbox" &&
+        e.target.hasAttribute("data-custom-validation")
+      ) {
+        if (e.target.checked) {
+          this.clearFieldError(e.target);
+        }
+      }
     });
 
     // Also bind to all submit buttons to ensure they go through our validation
@@ -1127,7 +1137,7 @@ class OptimizedFormHandler {
 
     console.log("=== VALIDATING CONTACT DETAILS STEP ===");
 
-    // Find all fields with custom validation in this step
+    // Find all fields with custom validation in this step (including checkboxes)
     const fields = utils.qa(
       "input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation]",
       contactStep
@@ -1155,15 +1165,34 @@ class OptimizedFormHandler {
       );
       let isValid = true;
       allFields.forEach((field) => {
-        if (!field.value || field.value.trim() === "") {
-          console.log(`Empty required field found: ${field.name || field.id}`);
-          isValid = false;
-          const fieldName =
-            field.getAttribute("name") ||
-            field.getAttribute("placeholder") ||
-            field.getAttribute("data-label") ||
-            "This field";
-          this.showFieldError(field, `${fieldName} is required`);
+        // Handle checkboxes differently
+        if (field.type === "checkbox") {
+          if (!field.checked) {
+            console.log(
+              `Unchecked required checkbox: ${field.name || field.id}`
+            );
+            isValid = false;
+            const fieldName =
+              field.getAttribute("name") ||
+              field.getAttribute("data-label") ||
+              field.getAttribute("aria-label") ||
+              "Consent";
+            this.showFieldError(field, `Please check ${fieldName} to continue`);
+          }
+        } else {
+          // Handle text inputs, selects, textareas
+          if (!field.value || field.value.trim() === "") {
+            console.log(
+              `Empty required field found: ${field.name || field.id}`
+            );
+            isValid = false;
+            const fieldName =
+              field.getAttribute("name") ||
+              field.getAttribute("placeholder") ||
+              field.getAttribute("data-label") ||
+              "This field";
+            this.showFieldError(field, `${fieldName} is required`);
+          }
         }
       });
 
@@ -1284,6 +1313,22 @@ class OptimizedFormHandler {
             }
             break;
         }
+      }
+
+      // Special handling for checkboxes (consent fields)
+      if (type === "checkbox") {
+        if (!field.checked) {
+          const fieldName =
+            field.getAttribute("name") ||
+            field.getAttribute("data-label") ||
+            field.getAttribute("aria-label") ||
+            "Consent";
+          console.log(`Unchecked required checkbox: ${fieldName}`);
+          this.showFieldError(field, `Please check ${fieldName} to continue`);
+          return false;
+        }
+        console.log(`Checkbox validation passed: ${field.name || field.id}`);
+        return true;
       }
 
       console.log(`Field validation passed: ${field.name || field.id}`);
