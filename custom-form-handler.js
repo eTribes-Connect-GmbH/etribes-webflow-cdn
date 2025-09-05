@@ -1127,13 +1127,6 @@ class OptimizedFormHandler {
 
     console.log("=== VALIDATING CONTACT DETAILS STEP ===");
 
-    // TEMPORARY: Always return false to test if validation blocking works
-    console.log(
-      "TEMPORARY TEST: Always blocking submission to test validation"
-    );
-    this.showContactDetailsStep();
-    return false;
-
     // Find all fields with custom validation in this step
     const fields = utils.qa(
       "input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation]",
@@ -1165,10 +1158,12 @@ class OptimizedFormHandler {
         if (!field.value || field.value.trim() === "") {
           console.log(`Empty required field found: ${field.name || field.id}`);
           isValid = false;
-          this.showFieldError(
-            field,
-            `${field.name || field.placeholder || "This field"} is required`
-          );
+          const fieldName =
+            field.getAttribute("name") ||
+            field.getAttribute("placeholder") ||
+            field.getAttribute("data-label") ||
+            "This field";
+          this.showFieldError(field, `${fieldName} is required`);
         }
       });
 
@@ -1251,6 +1246,48 @@ class OptimizedFormHandler {
           field.name || field.id
         }, value: "${value}", isRequired: ${isRequired}`
       );
+    }
+
+    // For Contact details step fields, treat them as required if they have data-custom-validation
+    if (field.hasAttribute("data-custom-validation")) {
+      // Clear previous errors
+      this.clearFieldError(field);
+
+      // Check if field is empty
+      if (!value) {
+        const fieldName =
+          field.getAttribute("name") ||
+          field.getAttribute("placeholder") ||
+          field.getAttribute("data-label") ||
+          "This field";
+        console.log(`Empty required field found: ${fieldName}`);
+        this.showFieldError(field, `${fieldName} is required`);
+        return false;
+      }
+
+      // If field has value, validate format based on type
+      if (value) {
+        switch (type) {
+          case "email":
+            if (!utils.isValidEmail(value)) {
+              console.log(`Invalid email format: ${value}`);
+              this.showFieldError(field, "Please enter a valid email address");
+              return false;
+            }
+            break;
+          case "tel":
+          case "phone":
+            if (!utils.isValidPhone(value)) {
+              console.log(`Invalid phone format: ${value}`);
+              this.showFieldError(field, "Please enter a valid phone number");
+              return false;
+            }
+            break;
+        }
+      }
+
+      console.log(`Field validation passed: ${field.name || field.id}`);
+      return true;
     }
 
     // Check if field should be validated based on InputFlow attributes
