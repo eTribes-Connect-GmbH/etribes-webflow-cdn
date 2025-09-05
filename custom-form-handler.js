@@ -100,6 +100,9 @@ class OptimizedFormHandler {
     // Disable HTML5 validation to use custom validation only
     this.form.setAttribute("novalidate", "");
 
+    // Disable HTML5 validation specifically for Contact details step
+    this.disableHTML5ValidationForContactStep();
+
     // Count steps
     this.steps = utils.qa("[if-step]", this.form);
     // console.log("setupForm: Found steps with [if-step] attribute:", this.steps);
@@ -126,6 +129,33 @@ class OptimizedFormHandler {
 
     // Initialize step states
     this.initializeStepStates(this.steps);
+  }
+
+  disableHTML5ValidationForContactStep() {
+    // Find the Contact details step
+    const contactStep = utils.q('[if-step="Contact details"]', this.form);
+    if (contactStep) {
+      // Find all form inputs within the Contact details step
+      const inputs = utils.qa("input, select, textarea", contactStep);
+
+      // Remove HTML5 validation attributes from inputs in this step
+      inputs.forEach((input) => {
+        // Remove validation attributes that trigger browser validation
+        input.removeAttribute("required");
+        input.removeAttribute("pattern");
+        input.removeAttribute("minlength");
+        input.removeAttribute("maxlength");
+        input.removeAttribute("min");
+        input.removeAttribute("max");
+
+        // Add a custom attribute to track that this field should use custom validation
+        input.setAttribute("data-custom-validation", "true");
+      });
+
+      console.log(
+        `Disabled HTML5 validation for ${inputs.length} fields in Contact details step`
+      );
+    }
   }
 
   initializeStepStates(steps) {
@@ -954,7 +984,7 @@ class OptimizedFormHandler {
 
     // Validate all fields that have validation (using original InputFlow attributes)
     const fields = utils.qa(
-      "input[data-if-has-validation], select[data-if-has-validation], textarea[data-if-has-validation], input[required], select[required], textarea[required]",
+      "input[data-if-has-validation], select[data-if-has-validation], textarea[data-if-has-validation], input[required], select[required], textarea[required], input[data-custom-validation], select[data-custom-validation], textarea[data-custom-validation]",
       currentStepElement
     );
 
@@ -996,7 +1026,8 @@ class OptimizedFormHandler {
     const value = field.value.trim();
     const isRequired =
       field.hasAttribute("required") ||
-      field.hasAttribute("data-if-has-validation");
+      field.hasAttribute("data-if-has-validation") ||
+      field.hasAttribute("data-custom-validation");
     const type = field.type;
     const tagName = field.tagName.toLowerCase();
 
@@ -1247,6 +1278,11 @@ class OptimizedFormHandler {
   shouldValidateField(field) {
     // Check if field should be validated based on InputFlow attributes
     if (field.hasAttribute("data-if-has-validation")) {
+      return true;
+    }
+
+    // Check if field has custom validation attribute (for Contact details step)
+    if (field.hasAttribute("data-custom-validation")) {
       return true;
     }
 
