@@ -251,15 +251,51 @@ class OptimizedFormHandler {
   }
 
   bindFormEvents() {
-    // Form submission
+    // Form submission - prevent ALL submissions and handle through our validation
     utils.addEvent(this.form, "submit", (e) => {
+      console.log("=== FORM SUBMIT EVENT TRIGGERED ===");
+      console.log("Event target:", e.target);
+      console.log("Form element:", this.form);
       e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
       this.handleFormSubmit(e.target);
     });
+
+    // Also prevent any other form submission attempts
+    utils.addEvent(
+      this.form,
+      "submit",
+      (e) => {
+        console.log("=== SECONDARY FORM SUBMIT EVENT TRIGGERED ===");
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      },
+      true
+    ); // Use capture phase
 
     // Input change events
     utils.addEvent(this.form, ["input", "change"], (e) => {
       this.handleInputChange(e.target);
+    });
+
+    // Also bind to all submit buttons to ensure they go through our validation
+    const submitButtons = utils.qa(
+      'input[type="submit"], button[type="submit"], button:not([type])',
+      this.form
+    );
+    console.log(`Found ${submitButtons.length} submit buttons in form`);
+
+    submitButtons.forEach((button, index) => {
+      console.log(`Submit button ${index + 1}:`, button);
+      utils.addEvent(button, "click", (e) => {
+        console.log(`=== SUBMIT BUTTON ${index + 1} CLICKED ===`);
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        this.handleFormSubmit(this.form);
+      });
     });
   }
 
@@ -1089,7 +1125,14 @@ class OptimizedFormHandler {
       return true; // If step doesn't exist, consider it valid
     }
 
-    console.log("Validating Contact details step...");
+    console.log("=== VALIDATING CONTACT DETAILS STEP ===");
+
+    // TEMPORARY: Always return false to test if validation blocking works
+    console.log(
+      "TEMPORARY TEST: Always blocking submission to test validation"
+    );
+    this.showContactDetailsStep();
+    return false;
 
     // Find all fields with custom validation in this step
     const fields = utils.qa(
