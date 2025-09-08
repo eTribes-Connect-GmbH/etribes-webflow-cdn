@@ -1469,7 +1469,7 @@ class OptimizedFormHandler {
 
     // Apply error styling with absolute positioning to prevent layout shifts
     errorElement.style.cssText =
-      "color: #e74c3c; font-size: 0.875rem; margin-top: 0.25rem; position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;";
+      "color: #f2545b; font-size: 0.875rem; margin-top: 0.25rem; position: absolute; top: 100%; left: 0; width: 100%; z-index: 10;";
 
     // Find the quiz_input-wrap container
     const quizInputWrap = field.closest(".quiz_input-wrap");
