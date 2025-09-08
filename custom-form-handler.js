@@ -1922,22 +1922,29 @@ class OptimizedFormHandler {
     //   utils.q(".w-form-done", form) || this.createMessageElement("success");
     // successElement.style.display = "none";
 
-    // Hide quiz elements
-    const quizStepGrid = document.querySelector(".quiz_step-grid");
-    const quizStepBottom = document.querySelector(".quiz-step_bottom");
+    // Hide quiz elements within specific quiz step
+    const quizStepContainer = document.querySelector(
+      '[if-step="Contact details"]'
+    );
 
-    if (quizStepGrid) {
-      quizStepGrid.style.display = "none";
-    }
+    if (quizStepContainer) {
+      const quizStepGrid = quizStepContainer.querySelector(".quiz_step-grid");
+      const quizStepBottom =
+        quizStepContainer.querySelector(".quiz-step_bottom");
 
-    if (quizStepBottom) {
-      quizStepBottom.style.display = "none";
+      if (quizStepGrid) {
+        quizStepGrid.style.display = "none";
+      }
+
+      if (quizStepBottom) {
+        quizStepBottom.style.display = "none";
+      }
     }
 
     // Show the report step (keep form visible)
     this.showReportStep();
 
-    successElement.scrollIntoView({ behavior: "smooth" });
+    // successElement.scrollIntoView({ behavior: "smooth" });
   }
 
   showReportStep() {
