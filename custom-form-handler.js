@@ -1918,9 +1918,21 @@ class OptimizedFormHandler {
 
   showSuccessMessage(form) {
     // Show success message
-    const successElement =
-      utils.q(".w-form-done", form) || this.createMessageElement("success");
-    successElement.style.display = "none";
+    // const successElement =
+    //   utils.q(".w-form-done", form) || this.createMessageElement("success");
+    // successElement.style.display = "none";
+
+    // Hide quiz elements
+    const quizStepGrid = document.querySelector(".quiz_step-grid");
+    const quizStepBottom = document.querySelector(".quiz-step_bottom");
+
+    if (quizStepGrid) {
+      quizStepGrid.style.display = "none";
+    }
+
+    if (quizStepBottom) {
+      quizStepBottom.style.display = "none";
+    }
 
     // Show the report step (keep form visible)
     this.showReportStep();
