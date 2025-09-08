@@ -1564,7 +1564,7 @@ class OptimizedFormHandler {
       errorElement.textContent =
         "Please complete all required fields before proceeding";
       errorElement.style.cssText =
-        "color: #e74c3c; font-size: 0.875rem; margin: 1rem 0; text-align: center; padding: 0.5rem; background: #fdf2f2; border: 1px solid #fecaca; border-radius: 0.375rem;";
+        "color: #f2545b; font-size: 0.875rem; margin: 1rem 0; text-align: center; padding: 0.5rem; background: #fdf2f2; border: 1px solid #fecaca; border-radius: 0.375rem;";
 
       // Insert at the top of the step
       currentStep.insertBefore(errorElement, currentStep.firstChild);
@@ -1920,7 +1920,7 @@ class OptimizedFormHandler {
     // Show success message
     const successElement =
       utils.q(".w-form-done", form) || this.createMessageElement("success");
-    successElement.style.display = "block";
+    successElement.style.display = "none";
 
     // Show the report step (keep form visible)
     this.showReportStep();
